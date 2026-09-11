@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DigitalAllianceTogo.Application/DigitalAllianceTogo.Application.csproj" />
+  <Project Path="DigitalAllianceTogo.Domain/DigitalAllianceTogo.Domain.csproj" />
+  <Project Path="DigitalAllianceTogo.Infrastructure/DigitalAllianceTogo.Infrastructure.csproj" />
+  <Project Path="DigitalAllianceTogo/DigitalAllianceTogo.csproj" />
+</Solution>

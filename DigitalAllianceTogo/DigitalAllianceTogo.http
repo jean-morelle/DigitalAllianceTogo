@@ -1,0 +1,6 @@
+@DigitalAllianceTogo_HostAddress = http://localhost:5104
+
+GET {{DigitalAllianceTogo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
