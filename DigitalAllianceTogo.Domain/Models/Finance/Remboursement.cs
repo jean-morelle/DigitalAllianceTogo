@@ -1,0 +1,21 @@
+﻿using DigitalAllianceTogo.Domain.Enum;
+
+namespace DigitalAllianceTogo.Domain.Models.Finance
+{
+    public class Remboursement
+    {
+        public Guid Id { get; set; }
+        public string Reference { get; set; } = string.Empty;
+        public decimal Montant { get; set; }
+        public DateTime DateDemande { get; set; } = DateTime.UtcNow;
+        public DateTime? DateExecution { get; set; }
+        public StatutRemboursement Statut { get; set; } = StatutRemboursement.EnAttente;
+
+        public Guid CommandeId { get; set; }
+        public Models.Commande.Commande Commande { get; set; } = null!;
+
+        // Remboursement (*) --> (1) VersionCommande : concerne
+        public Guid VersionCommandeId { get; set; }
+        public Models.Commande.VersionCommande VersionCommande { get; set; } = null!;
+    }
+}
