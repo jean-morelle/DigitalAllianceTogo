@@ -1,4 +1,5 @@
-﻿using DigitalAllianceTogo.Domain.Models.Audit;
+﻿using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Domain.Models.Audit;
 using DigitalAllianceTogo.Domain.Models.Catalogue;
 using DigitalAllianceTogo.Domain.Models.Commande;
 using DigitalAllianceTogo.Domain.Models.Devis;
@@ -13,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigitalAllianceTogo.Infrastructure.Persitence
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
