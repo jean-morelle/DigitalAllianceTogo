@@ -18,6 +18,19 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Devis
                 .HasMaxLength(30)
                 .IsRequired();
 
+            // Calculée à partir de Remise / SousTotal
+            builder.Ignore(d => d.TauxRemise);
+
+            builder.HasOne(d => d.ValidePar)
+                .WithMany()
+                .HasForeignKey(d => d.ValideParId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(d => d.CreePar)
+                .WithMany()
+                .HasForeignKey(d => d.CreeParId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Devis (1) *-- (1..*) LigneDevis : composition, supprimée avec le devis
             builder.HasMany(d => d.Lignes)
                 .WithOne(l => l.Devis)

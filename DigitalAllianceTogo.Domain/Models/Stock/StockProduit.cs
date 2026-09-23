@@ -5,6 +5,14 @@
         public Guid Id { get; set; }
         public int QuantitePhysique { get; set; }
         public int QuantiteReservee { get; set; }
+
+        // Sorti de l'entrepôt (remis au livreur) mais pas encore livré.
+        // Ne fait plus partie de QuantitePhysique.
+        public int QuantiteEnTransit { get; set; }
+
+        // Produits retournés/contrôlés endommagés : non vendables, hors QuantitePhysique.
+        public int QuantiteDefectueuse { get; set; }
+
         public int SeuilAlerte { get; set; }
 
         // Propriété calculée : jamais stockée en base (voir config EF : Ignore)

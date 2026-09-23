@@ -5,6 +5,7 @@ using DigitalAllianceTogo.Domain.Models.Devis;
 using DigitalAllianceTogo.Domain.Models.Finance;
 using DigitalAllianceTogo.Domain.Models.Livraison;
 using DigitalAllianceTogo.Domain.Models.Panier;
+using DigitalAllianceTogo.Domain.Models.Parametres;
 using DigitalAllianceTogo.Domain.Models.SAV;
 using DigitalAllianceTogo.Domain.Models.Security;
 using DigitalAllianceTogo.Domain.Models.Stock;
@@ -70,6 +71,9 @@ namespace DigitalAllianceTogo.Application.Common.Interfaces
 
         // Audit
         DbSet<JournalAudit> JournauxAudit { get; }
+
+        // Paramètres
+        DbSet<ParametresEntreprise> ParametresEntreprise { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

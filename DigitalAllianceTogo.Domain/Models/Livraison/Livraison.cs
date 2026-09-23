@@ -12,6 +12,12 @@ namespace DigitalAllianceTogo.Domain.Models.Livraison
         public DateTime? DatePriseEnCharge { get; set; }
         public DateTime? DateLivraison { get; set; }
 
+        // Anomalie signalée par le client lors d'une livraison "avec réserve"
+        public string? Reserve { get; set; }
+
+        // Raison d'un échec ou d'une reprogrammation
+        public string? MotifEchec { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

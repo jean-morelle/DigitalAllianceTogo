@@ -13,6 +13,8 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Stock
 
             builder.Property(s => s.QuantitePhysique).IsRequired();
             builder.Property(s => s.QuantiteReservee).IsRequired();
+            builder.Property(s => s.QuantiteEnTransit).IsRequired();
+            builder.Property(s => s.QuantiteDefectueuse).IsRequired();
             builder.Property(s => s.SeuilAlerte).IsRequired();
 
             // Propriété calculée en C# (QuantitePhysique - QuantiteReservee) :

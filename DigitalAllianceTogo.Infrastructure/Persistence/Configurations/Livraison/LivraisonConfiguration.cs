@@ -24,6 +24,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Livraiso
                 .HasMaxLength(30)
                 .IsRequired();
 
+            builder.Property(l => l.Reserve).HasMaxLength(1000);
+            builder.Property(l => l.MotifEchec).HasMaxLength(500);
+
             // Livraison (1) -- (0..1) PreuveLivraison
             builder.HasOne(l => l.Preuve)
                 .WithOne(p => p.Livraison)

@@ -11,6 +11,16 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         public StatutPaiement Statut { get; set; } = StatutPaiement.EnAttente;
         public ModePaiement Mode { get; set; }
 
+        // Paiement externe : preuve fournie par le client (référence de transaction, capture...)
+        public string? ReferenceExterne { get; set; }
+        public string? PreuveUrl { get; set; }
+
+        // Traçabilité de la confirmation : un paiement externe ne peut pas être
+        // confirmé sans savoir QUI l'a vérifié et QUAND.
+        public Guid? ConfirmeParId { get; set; }
+        public Models.Security.Utilisateur? ConfirmePar { get; set; }
+        public DateTime? DateConfirmation { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

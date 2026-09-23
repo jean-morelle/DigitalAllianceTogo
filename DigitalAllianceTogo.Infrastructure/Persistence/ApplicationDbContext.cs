@@ -6,6 +6,7 @@ using DigitalAllianceTogo.Domain.Models.Devis;
 using DigitalAllianceTogo.Domain.Models.Finance;
 using DigitalAllianceTogo.Domain.Models.Livraison;
 using DigitalAllianceTogo.Domain.Models.Panier;
+using DigitalAllianceTogo.Domain.Models.Parametres;
 using DigitalAllianceTogo.Domain.Models.SAV;
 using DigitalAllianceTogo.Domain.Models.Security;
 using DigitalAllianceTogo.Domain.Models.Stock;
@@ -69,6 +70,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence
 
         // ----- Audit -----
         public DbSet<JournalAudit> JournauxAudit => Set<JournalAudit>();
+
+        // ----- Paramètres -----
+        public DbSet<ParametresEntreprise> ParametresEntreprise => Set<ParametresEntreprise>();
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {

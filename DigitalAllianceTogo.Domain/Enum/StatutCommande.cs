@@ -13,8 +13,9 @@
         EnTransit = 9,
         Livree = 10,
         LivraisonEchoueeRefusClient = 11,
-        Annulee = 12,
-        EnAttenteRegulationFinanciere = 13,
-        Cloturee = 14
+        AnnulationEnCours = 12, // annulation pendant la préparation : le stock doit récupérer/contrôler les produits
+        Annulee = 13,
+        EnAttenteRegulationFinanciere = 14,
+        Cloturee = 15
     }
 }
