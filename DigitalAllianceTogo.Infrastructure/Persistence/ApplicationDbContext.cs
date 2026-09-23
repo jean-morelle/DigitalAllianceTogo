@@ -10,6 +10,8 @@ using DigitalAllianceTogo.Domain.Models.Parametres;
 using DigitalAllianceTogo.Domain.Models.SAV;
 using DigitalAllianceTogo.Domain.Models.Security;
 using DigitalAllianceTogo.Domain.Models.Stock;
+using DigitalAllianceTogo.Domain.Models.Notifications;
+using DigitalAllianceTogo.Infrastructure.Persistence.Notifications;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -72,6 +74,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence
         // ----- Audit -----
         public DbSet<JournalAudit> JournauxAudit => Set<JournalAudit>();
 
+        // ----- Notifications -----
+        public DbSet<Notification> Notifications => Set<Notification>();
+
         // ----- Paramètres -----
         public DbSet<ParametresEntreprise> ParametresEntreprise => Set<ParametresEntreprise>();
 
@@ -98,10 +103,14 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence
         /// ou suppression d'une ligne existante est refusée ici, et par un trigger en base
         /// (migration AuditInviolable) pour les accès qui ne passent pas par l'application.
         /// </summary>
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
             ProtegerJournalAudit();
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+
+            // Notifications client déduites des changements de statut, dans la même transaction
+            await new DetecteurNotifications(this).AjouterAsync(cancellationToken);
+
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

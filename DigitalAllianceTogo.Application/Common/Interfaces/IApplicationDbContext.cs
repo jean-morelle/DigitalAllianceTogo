@@ -76,6 +76,7 @@ namespace DigitalAllianceTogo.Application.Common.Interfaces
 
         // Paramètres
         DbSet<ParametresEntreprise> ParametresEntreprise { get; }
+        DbSet<DigitalAllianceTogo.Domain.Models.Notifications.Notification> Notifications { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

@@ -50,6 +50,11 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 // Annulation automatique des commandes impayées (toutes les heures)
 builder.Services.AddHostedService<ExpirationCommandesService>();
 
+// Notifications client : envoi par e-mail en tâche de fond (section « Email », inactif si non configurée)
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
+builder.Services.AddSingleton<IEnvoiEmail, EnvoiEmailSmtp>();
+builder.Services.AddHostedService<EnvoiNotificationsService>();
+
 // Register PasswordHasher
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
