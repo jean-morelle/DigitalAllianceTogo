@@ -1,83 +1,32 @@
-﻿# GkasGroup.Application
+# Module Produits
 
-Couche Application en CQRS (MediatR) — logique métier, orchestration, validation.
-Aucune dépendance à EF Core, PostgreSQL ou ASP.NET Core : uniquement des interfaces.
+Deuxième module CQRS complet, sur le même schéma que Utilisateurs.
 
-## Structure
+## Commands
+- `CreerProduit` : vérifie unicité de la Reference + existence Categorie/Marque
+- `ModifierProduit` : Reference volontairement NON modifiable (identifiant métier stable)
+- `SupprimerProduit` : échouera en base (contrainte Restrict) si le produit a du stock/des ventes
+- `AjouterImage` / `SupprimerImage` : gère la règle "une seule image principale par produit"
+- `AjouterAttribut` / `SupprimerAttribut`
 
-```
-Common/
-  Interfaces/     IApplicationDbContext, IPasswordHasher, ICurrentUserService
-  Behaviours/     ValidationBehaviour, LoggingBehaviour, UnhandledExceptionBehaviour
-  Exceptions/     NotFoundException, ValidationException, ConflictException
-  Models/         PaginatedList<T>
+## Queries
+- `GetProduitById` → `ProduitDetailDto` (avec images + attributs)
+- `GetProduits` → `ProduitDto` paginé, avec recherche + filtres Categorie/Marque/Actif
+- `GetCategories` / `GetMarques` (dans leurs propres dossiers `Categories/` et `Marques/`) :
+  listes simples non paginées, pour peupler des `<select>` côté front — PAS un vrai
+  module de gestion. Un vrai CRUD Categorie/Marque (avec Commands Create/Update/Delete)
+  reste à faire si vous voulez gérer le catalogue de catégories depuis l'API plutôt
+  qu'en base directement.
 
-Utilisateurs/           <- module de référence, à dupliquer pour les autres
-  Dtos/
-    UtilisateurDto.cs
-  Commands/
-    CreateUtilisateur/  Command + Handler + Validator
-    UpdateUtilisateur/  Command + Handler + Validator
-    DeleteUtilisateur/  Command + Handler
-    AssignerRole/       Command + Handler + Validator
-    RetirerRole/        Command + Handler
-  Queries/
-    GetUtilisateurById/ Query + Handler
-    GetUtilisateurs/    Query paginée + Handler + Validator
-```
+## Choix API notable
 
-## Pipeline MediatR (ordre d'exécution pour CHAQUE Command/Query)
+Contrairement à `UtilisateursController` (entièrement protégé), `ProduitsController`
+a sa lecture (`GET`) en `[AllowAnonymous]` : un catalogue produits doit être consultable
+par un visiteur non connecté sur un site e-commerce. Seules les mutations (POST/PUT/DELETE)
+exigent un rôle `Admin` ou `Catalogue`.
 
-```
-Requête entrante
-   │
-   ▼
-UnhandledExceptionBehaviour   (filet de sécurité, logue toute exception imprévue)
-   │
-   ▼
-LoggingBehaviour              (trace qui a fait quoi)
-   │
-   ▼
-ValidationBehaviour           (FluentValidation — bloque ICI si invalide,
-   │                           le Handler n'est jamais atteint)
-   ▼
-Handler                       (logique métier réelle)
-   │
-   ▼
-Réponse
-```
-
-## Pourquoi ce découpage (Command+Handler dans le même fichier, Validator séparé)
-
-C'est la convention du template "Clean Architecture" de Jason Taylor, devenu un
-standard de facto dans l'écosystème .NET — un dossier par cas d'usage, avec tout
-ce qui le concerne à l'intérieur. Ça facilite la navigation : pour comprendre
-"comment on assigne un rôle", tu ouvres `Commands/AssignerRole/` et tout y est.
-
-## Ce qui reste à faire avant de pouvoir compiler l'API
-
-- **`ICurrentUserService`** n'a pas encore d'implémentation concrète : ça viendra
-  dans `GkasGroup.Api`, car cette classe a besoin de lire le `HttpContext` /
-  le token JWT — une dépendance ASP.NET Core qui n'a pas sa place dans
-  Application ni Infrastructure.
-- Pas encore de gestion centralisée des erreurs HTTP (middleware qui transforme
-  `NotFoundException` → 404, `Application.Common.Exceptions.ValidationException` → 400,
-  `ConflictException` → 409) — ce sera fait dans l'API avec `IExceptionHandler` (ASP.NET Core 8).
-
-## Prochaine étape
-
-1. ✅ Solution .NET
-2. ✅ Clean Architecture (squelette)
-3. ✅ Domain
-4. ✅ Entités métier
-5. ✅ DbContext + EF Core
-6. ✅ PostgreSQL + migrations (fait par toi)
-7. ✅ Application / Use Cases ← **module Utilisateur fait, à dupliquer pour les autres**
-8. ✅ Infrastructure branchée sur les interfaces Application
-9. ⬜ API (Controllers + Program.cs + middleware d'erreurs)
-10. ⬜ Authentification / autorisation (JWT)
-
-Prochaine étape logique : le projet `GkasGroup.Api` — Controllers minces qui
-envoient juste les Commands/Queries à MediatR, `Program.cs` qui branche tout
-(`AddApplicationServices()` + `AddInfrastructureServices()`), et le middleware
-de gestion d'erreurs global.
+Les endpoints `GET /api/categories` et `GET /api/marques` sont exposés depuis
+`ProduitsController` via une route absolue (`~/api/categories`) — un raccourci pragmatique
+en attendant un vrai `CategoriesController`/`MarquesController` dédié. À corriger si ces
+deux entités reçoivent un jour leur propre gestion complète (upload d'image de bannière,
+réordonnancement, etc.).

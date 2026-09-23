@@ -30,7 +30,7 @@ namespace DigitalAllianceTogo.Common
                 Instance = httpContext.Request.Path
             };
 
-            if (exception is ApplicationValidationException validationException)
+            if (exception is ValidationException validationException)
                 problemDetails.Extensions["errors"] = validationException.Errors;
             else
                 problemDetails.Detail = exception.Message;
@@ -44,8 +44,9 @@ namespace DigitalAllianceTogo.Common
         private static (int StatusCode, string Title) MapException(Exception exception) => exception switch
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Ressource introuvable"),
-            ApplicationValidationException => (StatusCodes.Status400BadRequest, "Erreur de validation"),
+            ValidationException => (StatusCodes.Status400BadRequest, "Erreur de validation"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflit"),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Non autorisé"),
             _ => (StatusCodes.Status500InternalServerError, "Une erreur interne s'est produite")
         };
     }

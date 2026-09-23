@@ -1,18 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentValidation.Results;
+using FluentValidation;
+using MediatR;
+using ValidationException = DigitalAllianceTogo.Application.Common.Exceptions.ValidationException;
 
-namespace DigitalAllianceTogo.Application.Common.Exceptions
+namespace DigitalAllianceTogo.Application.Common.Behaviours
 {
-    public class ApplicationValidationException : Exception
+    /// <summary>
+    /// Exécute tous les validateurs FluentValidation de la requête avant son handler.
+    /// En cas d'échec, lève une ValidationException (mappée vers un 400 par l'API).
+    /// </summary>
+    public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
-        public IList<ValidationFailure> Errors { get; }
+        private readonly IEnumerable<IValidator<TRequest>> _validators;
 
-        public ApplicationValidationException(IEnumerable<ValidationFailure> failures)
-            : base("One or more validation failures have occurred.")
+        public ValidationBehaviour(IEnumerable<IValidator<TRequest>> validators)
         {
-            Errors = failures?.ToList() ?? new List<ValidationFailure>();
+            _validators = validators;
+        }
+
+        public async Task<TResponse> Handle(
+            TRequest request,
+            RequestHandlerDelegate<TResponse> next,
+            CancellationToken cancellationToken)
+        {
+            if (!_validators.Any())
+                return await next();
+
+            var context = new ValidationContext<TRequest>(request);
+
+            var results = await Task.WhenAll(
+                _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+
+            var failures = results
+                .SelectMany(r => r.Errors)
+                .Where(f => f is not null)
+                .ToList();
+
+            if (failures.Count != 0)
+                throw new ValidationException(failures);
+
+            return await next();
         }
     }
 }

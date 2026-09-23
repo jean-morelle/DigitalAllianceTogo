@@ -1,4 +1,4 @@
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.CreateUtilisateur;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateur;
 using DigitalAllianceTogo.Infrastructure.Services;
 
 namespace DigitalAllianceTogo.Tests.Controllers

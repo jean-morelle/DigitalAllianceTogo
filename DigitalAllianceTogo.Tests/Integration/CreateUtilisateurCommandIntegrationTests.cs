@@ -1,5 +1,5 @@
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.CreateUtilisateur;
-using DigitalAllianceTogo.Infrastructure.Persitence;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateur;
+using DigitalAllianceTogo.Infrastructure.Persistence;
 using DigitalAllianceTogo.Infrastructure.Services;
 using DigitalAllianceTogo.Domain.Models.Security;
 using Microsoft.EntityFrameworkCore;

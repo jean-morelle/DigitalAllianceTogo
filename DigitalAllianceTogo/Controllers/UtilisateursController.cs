@@ -1,19 +1,21 @@
 ﻿using DigitalAllianceTogo.Application.Common.Models;
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.AssignerRole;
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.CreateUtilisateur;
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.DeleteUtilisateur;
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.RetirerRole;
-using DigitalAllianceTogo.Application.Utilisateurs.Commonds.UpdateUtilisateur;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.AssignerRole;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateur;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.DeleteUtilisateur;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.RetirerRole;
+using DigitalAllianceTogo.Application.Utilisateurs.Commands.UpdateUtilisateur;
 using DigitalAllianceTogo.Application.Utilisateurs.Dtos;
 using DigitalAllianceTogo.Application.Utilisateurs.Queries.GetUtilisateurById;
 using DigitalAllianceTogo.Application.Utilisateurs.Queries.GetUtilisateurs;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalAllianceTogo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UtilisateursController : ControllerBase
     {
         private readonly ISender _sender;
