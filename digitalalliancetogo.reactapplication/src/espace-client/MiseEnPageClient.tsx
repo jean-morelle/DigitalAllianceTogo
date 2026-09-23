@@ -7,6 +7,7 @@ import {
 import { useAuth } from '@/lib/auth';
 import { Roles } from '@/lib/roles';
 import { cn } from '@/lib/utils';
+import { Cloche } from './Notifications';
 import { usePanier } from './panier';
 
 /** Mise en page publique / client : boutique, panier, compte. Pensée d'abord pour le téléphone. */
@@ -33,6 +34,8 @@ export function MiseEnPageClient() {
                         {estPersonnel && <Link to="/" className="text-muted-foreground hover:text-foreground text-sm">Back-office</Link>}
                     </nav>
                     <div className="flex-1" />
+
+                    {estClient && <Cloche />}
 
                     {estClient && (
                         <Button asChild variant="ghost" size="icon" className="relative" aria-label="Panier">

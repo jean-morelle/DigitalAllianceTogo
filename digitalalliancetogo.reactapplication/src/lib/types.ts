@@ -462,3 +462,13 @@ export interface InfosPaiement {
     nomBeneficiaire: string | null;
     delaiPaiementHeures: number;
 }
+
+export interface NotificationClient {
+    id: string;
+    dateCreation: string;
+    type: string;
+    titre: string;
+    message: string;
+    lien: string | null;
+    lue: boolean;
+}
