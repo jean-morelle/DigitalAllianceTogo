@@ -9,7 +9,7 @@ namespace DigitalAllianceTogo.Application.Common.Behaviours
     /// En cas d'échec, lève une ValidationException (mappée vers un 400 par l'API).
     /// </summary>
     public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+        where TRequest : notnull // pas IRequest<TResponse> : exclurait les commandes sans retour (IRequest)
     {
         private readonly IEnumerable<IValidator<TRequest>> _validators;
 

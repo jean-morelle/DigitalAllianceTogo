@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace DigitalAllianceTogo.Application.Common.Behaviours
 {
     public class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+        where TRequest : notnull // pas IRequest<TResponse> : exclurait les commandes sans retour (IRequest)
     {
         private readonly ILogger<UnhandledExceptionBehaviour<TRequest, TResponse>> _logger;
 

@@ -1,7 +1,7 @@
 using DigitalAllianceTogo.Application.Commandes.Dtos;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Common.Models;
-using DigitalAllianceTogo.Application.Devis.Common;
+using DigitalAllianceTogo.Application.Commandes.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using FluentValidation;
 using MediatR;
@@ -46,7 +46,7 @@ namespace DigitalAllianceTogo.Application.Commandes.Queries.GetCommandes
         {
             var query = _context.Commandes.AsNoTracking().AsQueryable();
 
-            if (!DevisHelper.EstPersonnel(_currentUser))
+            if (!CommandeHelper.VoitToutesLesCommandes(_currentUser))
                 query = query.Where(c => c.Client.UtilisateurId == _currentUser.UtilisateurId);
             else if (request.ClientId.HasValue)
                 query = query.Where(c => c.ClientId == request.ClientId.Value);

@@ -1,5 +1,6 @@
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Devis.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using Microsoft.EntityFrameworkCore;
@@ -25,11 +26,18 @@ namespace DigitalAllianceTogo.Application.Commandes.Common
                 .FirstOrDefaultAsync(c => c.Id == commandeId, cancellationToken)
                 ?? throw new NotFoundException("Commande", commandeId);
 
-            if (!DevisHelper.EstPersonnel(currentUser) && commande.Client.UtilisateurId != currentUser.UtilisateurId)
+            if (!VoitToutesLesCommandes(currentUser) && commande.Client.UtilisateurId != currentUser.UtilisateurId)
                 throw new ForbiddenAccessException();
 
             return commande;
         }
+
+        /// <summary>
+        /// Admin, Commercial et Gestionnaire de stock (qui prépare les commandes) voient tout ;
+        /// les autres (Client) seulement leurs propres commandes.
+        /// </summary>
+        public static bool VoitToutesLesCommandes(ICurrentUserService currentUser) =>
+            DevisHelper.EstPersonnel(currentUser) || currentUser.EstDansRole(Roles.GestionnaireStock);
 
         /// <summary>
         /// Moment à partir duquel court le délai de paiement :

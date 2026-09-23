@@ -6,6 +6,7 @@ using DigitalAllianceTogo.Application.Utilisateurs.Commands.DeleteUtilisateur;
 using DigitalAllianceTogo.Application.Utilisateurs.Commands.RetirerRole;
 using DigitalAllianceTogo.Application.Utilisateurs.Commands.UpdateUtilisateur;
 using DigitalAllianceTogo.Application.Utilisateurs.Dtos;
+using DigitalAllianceTogo.Application.Utilisateurs.Queries.GetRoles;
 using DigitalAllianceTogo.Application.Utilisateurs.Queries.GetUtilisateurById;
 using DigitalAllianceTogo.Application.Utilisateurs.Queries.GetUtilisateurs;
 using MediatR;
@@ -39,6 +40,14 @@ namespace DigitalAllianceTogo.Controllers
         {
             var result = await _sender.Send(query, cancellationToken);
             return Ok(result);
+        }
+
+        /// <summary>Rôles disponibles (Id à utiliser pour attribuer un rôle).</summary>
+        [HttpGet("roles")]
+        [ProducesResponseType(typeof(List<RoleDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<RoleDto>>> GetRoles(CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(new GetRolesQuery(), cancellationToken));
         }
 
         /// <summary>Détail d'un utilisateur par Id.</summary>
