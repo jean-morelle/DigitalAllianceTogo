@@ -10,23 +10,31 @@ using Microsoft.EntityFrameworkCore;
 namespace DigitalAllianceTogo.Application.Stock.Commands.EntreeStock
 {
     /// <summary>
-    /// Réception de marchandise dans un entrepôt (+ QuantitePhysique, mouvement Entree).
-    /// Ensuite, les commandes payées EnAttenteDisponibilite sont relancées dans l'ordre
-    /// de paiement : chacune est servie en entier ou pas du tout, et une commande trop
-    /// grosse pour le stock reçu ne bloque pas les suivantes.
+    /// Réception de marchandise dans un entrepôt (+ QuantitePhysique, mouvement Entree),
+    /// puis relance des commandes payées en attente de ce produit.
+    ///
+    /// Surplus fournisseur (§30) : si l'on indique la quantité commandée et que la livraison
+    /// réelle la dépasse, SEULE la quantité commandée entre en stock. L'écart est enregistré
+    /// et attend la décision de l'Administrateur (intégration ou retour fournisseur) :
+    /// un surplus n'est jamais intégré automatiquement.
     /// </summary>
     public record EntreeStockCommand : IRequest<EntreeStockResult>
     {
         public Guid ProduitId { get; init; }
         public Guid EntrepotId { get; init; }
+
+        /// <summary>Quantité réellement reçue.</summary>
         public int Quantite { get; init; }
+
+        /// <summary>Quantité commandée au fournisseur (facultative : sans elle, tout entre en stock).</summary>
+        public int? QuantiteCommandee { get; init; }
 
         /// <summary>Bon de livraison fournisseur, facture...</summary>
         public string Reference { get; init; } = string.Empty;
         public string? Motif { get; init; }
     }
 
-    public record EntreeStockResult(int QuantitePhysique, int QuantiteDisponible, List<string> CommandesReservees);
+    public record EntreeStockResult(int QuantitePhysique, int QuantiteDisponible, List<string> CommandesReservees, int SurplusEnAttente, Guid? EcartId);
 
     public class EntreeStockCommandValidator : AbstractValidator<EntreeStockCommand>
     {
@@ -35,6 +43,7 @@ namespace DigitalAllianceTogo.Application.Stock.Commands.EntreeStock
             RuleFor(x => x.ProduitId).NotEmpty();
             RuleFor(x => x.EntrepotId).NotEmpty();
             RuleFor(x => x.Quantite).InclusiveBetween(1, 100_000);
+            RuleFor(x => x.QuantiteCommandee).InclusiveBetween(1, 100_000);
             RuleFor(x => x.Reference).NotEmpty().MaximumLength(100);
             RuleFor(x => x.Motif).MaximumLength(500);
         }
@@ -43,11 +52,13 @@ namespace DigitalAllianceTogo.Application.Stock.Commands.EntreeStock
     public class EntreeStockCommandHandler : IRequestHandler<EntreeStockCommand, EntreeStockResult>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUser;
         private readonly IAuditService _audit;
 
-        public EntreeStockCommandHandler(IApplicationDbContext context, IAuditService audit)
+        public EntreeStockCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser, IAuditService audit)
         {
             _context = context;
+            _currentUser = currentUser;
             _audit = audit;
         }
 
@@ -61,58 +72,46 @@ namespace DigitalAllianceTogo.Application.Stock.Commands.EntreeStock
             if (!await _context.Produits.AnyAsync(p => p.Id == request.ProduitId, cancellationToken))
                 throw new NotFoundException("Produit", request.ProduitId);
 
-            var stock = await _context.StocksProduit
-                .FirstOrDefaultAsync(s => s.ProduitId == request.ProduitId && s.EntrepotId == request.EntrepotId, cancellationToken);
-            if (stock is null)
+            var reference = request.Reference.Trim();
+            var surplus = request.QuantiteCommandee is int commandee && request.Quantite > commandee
+                ? request.Quantite - commandee
+                : 0;
+            var aIntegrer = request.Quantite - surplus;
+
+            var stock = await EntreeStockHelper.EntrerAsync(_context, _audit, request.ProduitId, request.EntrepotId, aIntegrer, reference,
+                string.IsNullOrWhiteSpace(request.Motif) ? "Réception fournisseur" : request.Motif.Trim(), cancellationToken);
+
+            EcartReception? ecart = null;
+            if (surplus > 0)
             {
-                stock = new StockProduit { Id = Guid.NewGuid(), ProduitId = request.ProduitId, EntrepotId = request.EntrepotId };
-                _context.StocksProduit.Add(stock);
+                ecart = new EcartReception
+                {
+                    Id = Guid.NewGuid(),
+                    Reference = reference,
+                    QuantiteCommandee = request.QuantiteCommandee!.Value,
+                    QuantiteRecue = request.Quantite,
+                    Statut = StatutEcartReception.EnAttenteDecision,
+                    DateConstat = DateTime.UtcNow,
+                    ConstateParId = _currentUser.UtilisateurId!.Value,
+                    ProduitId = request.ProduitId,
+                    EntrepotId = request.EntrepotId
+                };
+                _context.EcartsReception.Add(ecart);
+                _audit.Enregistrer("ConstatSurplusFournisseur", "EcartReception", ecart.Id, apres: new
+                {
+                    ecart.Reference,
+                    ecart.QuantiteCommandee,
+                    ecart.QuantiteRecue,
+                    Surplus = surplus
+                });
             }
-
-            var avant = new { stock.QuantitePhysique, stock.QuantiteReservee };
-            stock.QuantitePhysique += request.Quantite;
-
-            _context.MouvementsStock.Add(new MouvementStock
-            {
-                Id = Guid.NewGuid(),
-                Type = TypeMouvementStock.Entree,
-                Quantite = request.Quantite,
-                DateMouvement = DateTime.UtcNow,
-                Motif = string.IsNullOrWhiteSpace(request.Motif) ? "Réception fournisseur" : request.Motif.Trim(),
-                Reference = request.Reference.Trim(),
-                StockProduitId = stock.Id
-            });
-            _audit.Enregistrer("EntreeStock", "StockProduit", stock.Id, avant,
-                new { stock.QuantitePhysique, stock.QuantiteReservee, request.Quantite, request.Reference });
 
             // L'entrée est valable seule : on l'enregistre avant de relancer les commandes
             await _context.SaveChangesAsync(cancellationToken);
 
-            var commandesReservees = await RelancerCommandesEnAttenteAsync(request.ProduitId, cancellationToken);
+            var commandesReservees = await EntreeStockHelper.RelancerCommandesEnAttenteAsync(_context, _audit, request.ProduitId, cancellationToken);
 
-            return new EntreeStockResult(stock.QuantitePhysique, stock.QuantiteDisponible, commandesReservees);
-        }
-
-        private async Task<List<string>> RelancerCommandesEnAttenteAsync(Guid produitId, CancellationToken cancellationToken)
-        {
-            var enAttente = await _context.Commandes
-                .Where(c => c.Statut == StatutCommande.EnAttenteDisponibilite
-                            && c.Versions.Any(v => v.NumeroVersion == c.VersionActive && v.Lignes.Any(l => l.ProduitId == produitId)))
-                // Premier payé, premier servi
-                .OrderBy(c => c.Paiements.Where(p => p.Statut == StatutPaiement.Confirme).Max(p => p.DateConfirmation))
-                .ToListAsync(cancellationToken);
-
-            var reservees = new List<string>();
-            foreach (var commande in enAttente)
-            {
-                if (await ReservationStock.TenterAsync(_context, _audit, commande, cancellationToken))
-                    reservees.Add(commande.Reference);
-            }
-
-            if (reservees.Count > 0)
-                await _context.SaveChangesAsync(cancellationToken);
-
-            return reservees;
+            return new EntreeStockResult(stock.QuantitePhysique, stock.QuantiteDisponible, commandesReservees, surplus, ecart?.Id);
         }
     }
 }

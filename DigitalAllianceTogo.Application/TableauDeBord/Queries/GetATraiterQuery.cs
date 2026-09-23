@@ -58,6 +58,8 @@ namespace DigitalAllianceTogo.Application.TableauDeBord.Queries
                     _context.Remboursements.Where(r => r.Statut == StatutRemboursement.Echoue).Select(r => r.DateDemande), ct));
                 files.Add(await FileAsync("avoirs-a-valider", "Avoirs à valider", Roles.Admin,
                     _context.Avoirs.Where(a => a.Statut == StatutAvoir.EnAttente).Select(a => a.DateCreation), ct));
+                files.Add(await FileAsync("surplus-fournisseur", "Surplus fournisseur : intégrer ou retourner", Roles.Admin,
+                    _context.EcartsReception.Where(e => e.Statut == StatutEcartReception.EnAttenteDecision).Select(e => e.DateConstat), ct));
             }
 
             if (Voit(Roles.GestionnaireStock))

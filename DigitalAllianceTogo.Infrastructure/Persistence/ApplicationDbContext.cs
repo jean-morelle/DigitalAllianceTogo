@@ -39,6 +39,7 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence
         public DbSet<Entrepot> Entrepots => Set<Entrepot>();
         public DbSet<StockProduit> StocksProduit => Set<StockProduit>();
         public DbSet<MouvementStock> MouvementsStock => Set<MouvementStock>();
+        public DbSet<EcartReception> EcartsReception => Set<EcartReception>();
 
         // ----- Devis -----
         public DbSet<Devis> Devis => Set<Devis>();

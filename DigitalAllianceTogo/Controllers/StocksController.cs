@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Stock.Commands.CreerEntrepot;
 using DigitalAllianceTogo.Application.Stock.Commands.EntreeStock;
+using DigitalAllianceTogo.Application.Stock.Commands.SurplusFournisseur;
 using DigitalAllianceTogo.Application.Stock.Queries.GetStocks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -44,6 +45,24 @@ namespace DigitalAllianceTogo.Api.Controllers
         public async Task<ActionResult<EntreeStockResult>> EntreeStock(EntreeStockCommand command, CancellationToken cancellationToken)
         {
             return Ok(await _sender.Send(command, cancellationToken));
+        }
+
+        /// <summary>Surplus fournisseur (§30), par défaut ceux qui attendent une décision.</summary>
+        [HttpGet("ecarts")]
+        [ProducesResponseType(typeof(List<EcartReceptionDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<EcartReceptionDto>>> GetEcarts([FromQuery] GetEcartsReceptionQuery query, CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(query, cancellationToken));
+        }
+
+        /// <summary>Administrateur : intégrer le surplus au stock ou le retourner au fournisseur.</summary>
+        [HttpPost("ecarts/{id:guid}/decision")]
+        [Authorize(Roles = Roles.Admin)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<List<string>>> DeciderEcart(Guid id, DeciderEcartReceptionCommand command, CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(command with { Id = id }, cancellationToken));
         }
 
         [HttpGet("entrepots")]

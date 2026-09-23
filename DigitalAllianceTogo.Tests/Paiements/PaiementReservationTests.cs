@@ -212,7 +212,7 @@ namespace DigitalAllianceTogo.Tests.Paiements
             // Seulement 2 PC reçus : de quoi servir UNE commande, la première payée
             _user.UtilisateurId = Guid.NewGuid();
             _user.Roles = new[] { Roles.GestionnaireStock };
-            var result = await new EntreeStockCommandHandler(_context, _audit).Handle(new EntreeStockCommand
+            var result = await new EntreeStockCommandHandler(_context, _user, _audit).Handle(new EntreeStockCommand
             {
                 ProduitId = _pcId, EntrepotId = _entrepotLomeId, Quantite = 2, Reference = "BL-001"
             }, default);

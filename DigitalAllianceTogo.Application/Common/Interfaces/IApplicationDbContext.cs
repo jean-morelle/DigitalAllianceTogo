@@ -40,6 +40,7 @@ namespace DigitalAllianceTogo.Application.Common.Interfaces
         DbSet<Entrepot> Entrepots { get; }
         DbSet<StockProduit> StocksProduit { get; }
         DbSet<MouvementStock> MouvementsStock { get; }
+        DbSet<EcartReception> EcartsReception { get; }
 
         // Devis
         // Nom complet : "Devis" est aussi le namespace du module Application.Devis
