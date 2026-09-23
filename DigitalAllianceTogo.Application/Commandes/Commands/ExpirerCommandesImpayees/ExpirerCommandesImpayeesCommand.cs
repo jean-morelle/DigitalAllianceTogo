@@ -48,7 +48,7 @@ namespace DigitalAllianceTogo.Application.Commandes.Commands.ExpirerCommandesImp
 
                 _audit.EnregistrerSysteme("ExpirationCommande", "Commande", commande.Id,
                     new { Statut = avant },
-                    new { Statut = commande.Statut.ToString(), Motif = $"Impayée après {parametres.DelaiExpirationPaiementHeures} h" });
+                    new { Statut = commande.Statut.ToString(), Motif = $"Annulée puis clôturée : impayée après {parametres.DelaiExpirationPaiementHeures} h" });
                 annulees++;
             }
 

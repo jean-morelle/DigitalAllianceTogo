@@ -14,6 +14,8 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Finance
             builder.Property(a => a.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(a => a.Reference).IsUnique();
 
+            builder.Property(a => a.Motif).IsRequired().HasMaxLength(500);
+
             builder.Property(a => a.Statut)
                 .HasConversion<string>()
                 .HasMaxLength(30)

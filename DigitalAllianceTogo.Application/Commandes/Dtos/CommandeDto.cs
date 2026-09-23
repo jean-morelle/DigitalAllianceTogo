@@ -20,6 +20,8 @@ namespace DigitalAllianceTogo.Application.Commandes.Dtos
         public AdresseLivraisonCommandeDto AdresseLivraison { get; set; } = new();
         public List<LigneCommandeDto> Lignes { get; set; } = new();
         public List<PaiementDto> Paiements { get; set; } = new();
+        public List<Finance.Queries.RemboursementDto> Remboursements { get; set; } = new();
+        public List<Finance.Queries.AvoirDto> Avoirs { get; set; } = new();
 
         /// <summary>Date limite pour payer (ou repayer), si la commande attend le client.</summary>
         public DateTime? DateLimitePaiement { get; set; }

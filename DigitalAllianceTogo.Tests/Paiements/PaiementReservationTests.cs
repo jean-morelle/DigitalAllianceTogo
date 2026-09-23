@@ -263,7 +263,7 @@ namespace DigitalAllianceTogo.Tests.Paiements
                 .Handle(new ExpirerCommandesImpayeesCommand(), default);
 
             Assert.Equal(1, annulees);
-            Assert.Equal(StatutCommande.Annulee, (await CommandeAsync(jamaisPayee)).Statut);
+            Assert.Equal(StatutCommande.Cloturee, (await CommandeAsync(jamaisPayee)).Statut); // Annulée puis Clôturée (§19)
             Assert.Equal(StatutCommande.CommandeCreee, (await CommandeAsync(recente)).Statut);
             Assert.Equal(StatutCommande.PaiementEnAttente, (await CommandeAsync(enVerification)).Statut);
 
@@ -292,7 +292,7 @@ namespace DigitalAllianceTogo.Tests.Paiements
             var commandeId = CreerCommande(creeIlYA: TimeSpan.FromHours(49));
 
             await Assert.ThrowsAsync<ConflictException>(() => SoumettreAsync(commandeId, "REF-TARD"));
-            Assert.Equal(StatutCommande.Annulee, (await CommandeAsync(commandeId)).Statut);
+            Assert.Equal(StatutCommande.Cloturee, (await CommandeAsync(commandeId)).Statut);
         }
 
         // ---------- Utilitaires ----------

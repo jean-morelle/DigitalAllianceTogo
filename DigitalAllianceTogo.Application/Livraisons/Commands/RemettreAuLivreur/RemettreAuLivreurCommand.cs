@@ -42,7 +42,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.RemettreAuLivreur
 
             var avant = LivraisonHelper.Instantane(livraison);
 
-            var sorties = await LivraisonStock.SortirAsync(_context, livraison, cancellationToken);
+            var sorties = await StockCommande.SortirAsync(_context, livraison, cancellationToken);
 
             livraison.Statut = StatutLivraison.EnTransit;
             livraison.DatePriseEnCharge = DateTime.UtcNow;

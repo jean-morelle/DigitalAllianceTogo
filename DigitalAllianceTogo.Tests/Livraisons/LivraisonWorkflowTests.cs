@@ -182,14 +182,15 @@ namespace DigitalAllianceTogo.Tests.Livraisons
         }
 
         [Fact]
-        public async Task Refus_client_libere_le_stock()
+        public async Task Refus_client_le_colis_reste_en_transit_jusqu_au_controle_du_stock()
         {
             var livraisonId = await PreparerEtPlanifierAsync();
             await RemettreAsync(livraisonId);
 
             await EchouerAsync(livraisonId, refus: true);
 
-            await AssertStockAsync(physique: 5, reserve: 0, transit: 0);
+            // §16 : rien ne redevient vendable avant la réception et le contrôle par le Gestionnaire de stock
+            await AssertStockAsync(physique: 3, reserve: 0, transit: 2);
             Assert.Equal(StatutCommande.LivraisonEchoueeRefusClient, (await CommandeAsync()).Statut);
             var livraison = await LivraisonAsync(livraisonId);
             Assert.Equal(StatutLivraison.Echouee, livraison.Statut);

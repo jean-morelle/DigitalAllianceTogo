@@ -46,7 +46,7 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
             {
                 _audit.Enregistrer("ExpirationCommande", "Commande", commande.Id, apres: new { Statut = commande.Statut.ToString() });
                 await _context.SaveChangesAsync(cancellationToken);
-                throw new ConflictException("Le délai de paiement est dépassé : la commande a été annulée.");
+                throw new ConflictException("Le délai de paiement est dépassé : la commande a été annulée et clôturée.");
             }
 
             if (commande.Statut is not (StatutCommande.CommandeCreee or StatutCommande.PaiementEchoue))

@@ -11,6 +11,9 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         public DateTime? DateUtilisation { get; set; }
         public StatutAvoir Statut { get; set; } = StatutAvoir.EnAttente;
 
+        // Pourquoi l'avoir est émis (annulation, refus de livraison...) ou annulé
+        public string Motif { get; set; } = string.Empty;
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

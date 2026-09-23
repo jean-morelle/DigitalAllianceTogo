@@ -76,7 +76,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.ConfirmerLivraison
             var avant = LivraisonHelper.Instantane(livraison);
             var reserve = string.IsNullOrWhiteSpace(request.Reserve) ? null : request.Reserve.Trim();
 
-            await LivraisonStock.LivrerAsync(_context, livraison, cancellationToken);
+            await StockCommande.LivrerAsync(_context, livraison, cancellationToken);
 
             livraison.Statut = reserve is null ? StatutLivraison.Livree : StatutLivraison.LivreeAvecReserve;
             livraison.Reserve = reserve;

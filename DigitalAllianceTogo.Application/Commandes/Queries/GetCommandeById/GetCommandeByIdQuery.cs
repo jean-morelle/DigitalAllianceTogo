@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Commandes.Common;
 using DigitalAllianceTogo.Application.Commandes.Dtos;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Finance.Queries;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,8 +40,33 @@ namespace DigitalAllianceTogo.Application.Commandes.Queries.GetCommandeById
             var parametres = await _context.ParametresEntreprise.AsNoTracking().FirstAsync(cancellationToken);
             var debutDelai = CommandeHelper.DebutDelaiPaiement(commande);
 
+            var remboursements = await _context.Remboursements.AsNoTracking()
+                .Where(r => r.CommandeId == commande.Id)
+                .OrderBy(r => r.DateDemande)
+                .Select(r => new RemboursementDto
+                {
+                    Id = r.Id, Reference = r.Reference, Montant = r.Montant, Statut = r.Statut.ToString(), Motif = r.Motif,
+                    DateDemande = r.DateDemande, DateExecution = r.DateExecution, ReferenceTransaction = r.ReferenceTransaction,
+                    MotifEchec = r.MotifEchec, CommandeId = r.CommandeId, CommandeReference = commande.Reference,
+                    NumeroVersion = r.VersionCommande.NumeroVersion
+                })
+                .ToListAsync(cancellationToken);
+
+            var avoirs = await _context.Avoirs.AsNoTracking()
+                .Where(a => a.CommandeId == commande.Id)
+                .OrderBy(a => a.DateCreation)
+                .Select(a => new AvoirDto
+                {
+                    Id = a.Id, Reference = a.Reference, Montant = a.Montant, Statut = a.Statut.ToString(), Motif = a.Motif,
+                    DateCreation = a.DateCreation, DateUtilisation = a.DateUtilisation, CommandeId = a.CommandeId,
+                    CommandeReference = commande.Reference, NumeroVersion = a.VersionCommande.NumeroVersion
+                })
+                .ToListAsync(cancellationToken);
+
             return new CommandeDetailDto
             {
+                Remboursements = remboursements,
+                Avoirs = avoirs,
                 Id = commande.Id,
                 Reference = commande.Reference,
                 Statut = commande.Statut.ToString(),

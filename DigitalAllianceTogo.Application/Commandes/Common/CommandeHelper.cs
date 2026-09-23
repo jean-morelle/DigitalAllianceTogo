@@ -54,9 +54,9 @@ namespace DigitalAllianceTogo.Application.Commandes.Common
         };
 
         /// <summary>
-        /// Annule une commande restée impayée au-delà du délai (§9).
-        /// Aucun stock n'est réservé avant paiement : rien à libérer.
-        /// Retourne vrai si la commande vient d'être annulée (l'appelant sauvegarde).
+        /// Annule une commande restée impayée au-delà du délai (§19) : Annulée → Clôturée,
+        /// car rien n'a été encaissé ni réservé (aucune régularisation à attendre).
+        /// Retourne vrai si la commande vient d'être annulée (l'appelant journalise et sauvegarde).
         /// </summary>
         public static bool AnnulerSiDelaiDepasse(CommandeEntity commande, int delaiHeures, DateTime maintenant)
         {
@@ -64,7 +64,7 @@ namespace DigitalAllianceTogo.Application.Commandes.Common
             if (debut is null || debut.Value.AddHours(delaiHeures) > maintenant)
                 return false;
 
-            commande.Statut = StatutCommande.Annulee;
+            commande.Statut = StatutCommande.Cloturee;
             return true;
         }
     }

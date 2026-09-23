@@ -11,6 +11,15 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         public DateTime? DateExecution { get; set; }
         public StatutRemboursement Statut { get; set; } = StatutRemboursement.EnAttente;
 
+        // Pourquoi on rembourse (annulation, refus de livraison...)
+        public string Motif { get; set; } = string.Empty;
+
+        // Preuve de l'exécution (référence du transfert Mobile Money / virement)
+        public string? ReferenceTransaction { get; set; }
+
+        // Raison du dernier échec d'exécution (numéro invalide, compte fermé...)
+        public string? MotifEchec { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 
