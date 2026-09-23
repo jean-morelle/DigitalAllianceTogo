@@ -16,7 +16,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { Roles } from '@/lib/roles';
 import { formatDate, formatFcfa, libelle } from '@/lib/format';
-import type { CommandeDetail, JournalAudit, LigneCommande, VersionCommande } from '@/lib/types';
+import type { CommandeDetail, JournalAudit, LigneCommande, Livraison, PaginatedList, VersionCommande } from '@/lib/types';
+import { DialoguePlanifier } from '@/pages/livraisons/ActionsLivraison';
 import { cn } from '@/lib/utils';
 
 type Mode = 'Remboursement' | 'Avoir';
@@ -184,6 +185,12 @@ export function CommandeDetailPage() {
         queryKey: ['commande', id],
         queryFn: () => api.get<CommandeDetail>(`/commandes/${id}`),
     });
+    // Livraisons de la commande : réservé au stock (le Commercial n'y a pas accès côté API)
+    const { data: livraisons } = useQuery({
+        queryKey: ['livraisons', 'commande', id],
+        queryFn: () => api.get<PaginatedList<Livraison>>('/livraisons', { commandeId: id, pageSize: 50 }),
+        enabled: aRole(Roles.GestionnaireStock),
+    });
 
     const rafraichir = () => {
         for (const cle of ['commande', 'commandes', 'a-traiter', 'historique']) void queryClient.invalidateQueries({ queryKey: [cle] });
@@ -202,6 +209,8 @@ export function CommandeDetailPage() {
     const proposition = c.versions.find(v => v.statut === 'EnValidationAdmin' || v.statut === 'EnAttenteClient');
     const payee = ['PaiementConfirme', 'EnAttenteDisponibilite', 'StockReserve', 'PreparationEnCours', 'PretePourLivraison'].includes(s)
         || (['CommandeCreee', 'PaiementEchoue'].includes(s) && c.paiements.some(p => p.statut === 'Confirme'));
+    const livraisonEnCours = livraisons?.items.some(l => l.ticketSAVId === null && ['Planifiee', 'EnTransit'].includes(l.statut)) ?? false;
+    const dejaTentee = livraisons?.items.some(l => l.ticketSAVId === null && l.statut === 'AReprogrammer') ?? false;
     const annulable = ['CommandeCreee', 'PaiementEchoue', 'PaiementConfirme', 'EnAttenteDisponibilite', 'StockReserve', 'PreparationEnCours', 'PretePourLivraison'].includes(s);
 
     return (
@@ -223,6 +232,9 @@ export function CommandeDetailPage() {
                 <div className="flex flex-wrap gap-2">
                     {aRole(Roles.Commercial) && !proposition && ['PaiementConfirme', 'EnAttenteDisponibilite', 'StockReserve', 'PreparationEnCours', 'PretePourLivraison'].includes(s) && (
                         <Button variant="outline" asChild><Link to={`/commandes/${c.id}/modifier`}><FilePen /> Proposer une modification</Link></Button>
+                    )}
+                    {aRole(Roles.GestionnaireStock) && s === 'PretePourLivraison' && livraisons && !livraisonEnCours && (
+                        <DialoguePlanifier commandeId={c.id} relivraison={dejaTentee} />
                     )}
                     {aRole(Roles.GestionnaireStock) && s === 'StockReserve' && (
                         <Button onClick={() => agir('demarrer-preparation', 'Préparation démarrée.')}><PackageOpen /> Démarrer la préparation</Button>
@@ -284,6 +296,7 @@ export function CommandeDetailPage() {
                 <TabsList>
                     <TabsTrigger value="contenu">Contenu</TabsTrigger>
                     <TabsTrigger value="argent">Paiements ({c.paiements.length})</TabsTrigger>
+                    {livraisons && livraisons.items.length > 0 && <TabsTrigger value="livraisons">Livraisons ({livraisons.items.length})</TabsTrigger>}
                     <TabsTrigger value="versions">Versions ({c.versions.length})</TabsTrigger>
                     {aRole(Roles.Commercial) && <TabsTrigger value="historique">Historique</TabsTrigger>}
                 </TabsList>
@@ -335,6 +348,26 @@ export function CommandeDetailPage() {
                         </Card>
                     )}
                 </TabsContent>
+
+                {livraisons && (
+                    <TabsContent value="livraisons">
+                        <Card><CardContent className="p-0">
+                            <Table>
+                                <TableHeader><TableRow><TableHead>Livraison</TableHead><TableHead>Livreur</TableHead><TableHead>Prévue le</TableHead><TableHead>Statut</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {livraisons.items.map(l => (
+                                        <TableRow key={l.id}>
+                                            <TableCell><div className="font-medium">{l.reference}</div><div className="text-muted-foreground text-xs">{libelle(l.type)}</div></TableCell>
+                                            <TableCell>{l.livreurNom ?? '—'}</TableCell>
+                                            <TableCell>{formatDate(l.datePlanifiee, false)}</TableCell>
+                                            <TableCell><StatutBadge statut={l.statut} />{l.motifEchec && <div className="mt-1 text-xs text-red-600">{l.motifEchec}</div>}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent></Card>
+                    </TabsContent>
+                )}
 
                 <TabsContent value="versions" className="space-y-4">
                     {[...c.versions].reverse().map(v => (

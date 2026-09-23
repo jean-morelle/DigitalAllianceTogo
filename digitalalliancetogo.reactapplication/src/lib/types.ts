@@ -316,3 +316,34 @@ export interface ResultatEntreeStock {
     surplusEnAttente: number;
     ecartId: string | null;
 }
+
+// ---------- Livraisons ----------
+
+export interface Livraison {
+    id: string;
+    reference: string;
+    type: string;
+    statut: string;
+    datePlanifiee: string;
+    datePriseEnCharge: string | null;
+    dateLivraison: string | null;
+    motifEchec: string | null;
+    reserve: string | null;
+    commandeId: string;
+    commandeReference: string;
+    ticketSAVId: string | null;
+    livreurId: string | null;
+    livreurNom: string | null;
+    adresseLigne1: string;
+    adresseLigne2: string | null;
+    ville: string;
+    telephoneContact: string;
+    preuve: { datePreuve: string; photoUrl: string | null; signatureUrl: string | null; latitude: number | null; longitude: number | null; commentaire: string | null } | null;
+}
+
+export interface Livreur {
+    id: string;
+    nom: string;
+    telephone: string;
+    livraisonsEnCours: number;
+}

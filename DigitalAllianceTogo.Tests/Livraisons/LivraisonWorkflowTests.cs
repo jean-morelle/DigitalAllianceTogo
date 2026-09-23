@@ -235,6 +235,22 @@ namespace DigitalAllianceTogo.Tests.Livraisons
                 }, default));
         }
 
+        [Fact]
+        public async Task Liste_des_livreurs_actifs_avec_leur_charge()
+        {
+            await PreparerEtPlanifierAsync();
+            var inactif = await _context.Utilisateurs.SingleAsync(u => u.Id == _autreLivreurId);
+            inactif.Actif = false;
+            await _context.SaveChangesAsync();
+
+            var livreurs = await new DigitalAllianceTogo.Application.Livraisons.Queries.GetLivreursQueryHandler(_context)
+                .Handle(new DigitalAllianceTogo.Application.Livraisons.Queries.GetLivreursQuery(), default);
+
+            var livreur = Assert.Single(livreurs); // ni le gestionnaire, ni le livreur désactivé
+            Assert.Equal(_livreurId, livreur.Id);
+            Assert.Equal(1, livreur.LivraisonsEnCours);
+        }
+
         // ---------- Utilitaires ----------
 
         private async Task PreparerAsync()

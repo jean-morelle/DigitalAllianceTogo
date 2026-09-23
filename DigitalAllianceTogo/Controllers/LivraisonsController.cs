@@ -41,6 +41,15 @@ namespace DigitalAllianceTogo.Api.Controllers
             return Ok(await _sender.Send(query, cancellationToken));
         }
 
+        /// <summary>Livreurs actifs et leur charge, pour planifier une livraison.</summary>
+        [HttpGet("livreurs")]
+        [Authorize(Roles = GestionStock)]
+        [ProducesResponseType(typeof(List<LivreurDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<LivreurDto>>> GetLivreurs(CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(new GetLivreursQuery(), cancellationToken));
+        }
+
         /// <summary>Détail : adresse, téléphone du destinataire, preuve.</summary>
         [HttpGet("{id:guid}")]
         [Authorize(Roles = Terrain)]
