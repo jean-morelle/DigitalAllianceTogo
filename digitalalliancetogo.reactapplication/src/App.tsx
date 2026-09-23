@@ -1,8 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
-import { Construction } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RedirectionAccueil, RequireAuth, RequireRole } from '@/components/layout/Garde';
-import { EnTetePage } from '@/components/commun';
 import { useAuth } from '@/lib/auth';
 import { Roles } from '@/lib/roles';
 import { LoginPage } from '@/pages/LoginPage';
@@ -18,18 +16,8 @@ import { StockPage } from '@/pages/stock/StockPage';
 import { LivraisonsPage } from '@/pages/livraisons/LivraisonsPage';
 import { SavPage } from '@/pages/sav/SavPage';
 import { SavDetailPage } from '@/pages/sav/SavDetailPage';
-
-function BientotDisponible({ titre }: { titre: string }) {
-    return (
-        <>
-            <EnTetePage titre={titre} />
-            <div className="text-muted-foreground flex flex-col items-center gap-3 py-16">
-                <Construction className="size-10" />
-                Cet écran arrive dans la prochaine étape.
-            </div>
-        </>
-    );
-}
+import { FinancePage } from '@/pages/FinancePage';
+import { AuditPage } from '@/pages/AuditPage';
 
 function Accueil() {
     const { aRole } = useAuth();
@@ -55,8 +43,8 @@ export default function App() {
                     <Route path="livraisons" element={<RequireRole roles={[Roles.GestionnaireStock, Roles.Livreur]}><LivraisonsPage /></RequireRole>} />
                     <Route path="sav" element={<RequireRole roles={[Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock]}><SavPage /></RequireRole>} />
                     <Route path="sav/:id" element={<RequireRole roles={[Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock]}><SavDetailPage /></RequireRole>} />
-                    <Route path="finance" element={<BientotDisponible titre="Remboursements & avoirs" />} />
-                    <Route path="audit" element={<BientotDisponible titre="Journal d'audit" />} />
+                    <Route path="finance" element={<RequireRole roles={[Roles.Commercial]}><FinancePage /></RequireRole>} />
+                    <Route path="audit" element={<RequireRole roles={[]}><AuditPage /></RequireRole>} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
