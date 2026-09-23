@@ -2,6 +2,9 @@ using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Stock.Commands.CreerEntrepot;
 using DigitalAllianceTogo.Application.Stock.Commands.EntreeStock;
 using DigitalAllianceTogo.Application.Stock.Commands.SurplusFournisseur;
+using DigitalAllianceTogo.Application.Stock.Commands.SeuilAlerte;
+using DigitalAllianceTogo.Application.Stock.Queries.GetMouvements;
+using DigitalAllianceTogo.Application.Common.Models;
 using DigitalAllianceTogo.Application.Stock.Queries.GetStocks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +48,25 @@ namespace DigitalAllianceTogo.Api.Controllers
         public async Task<ActionResult<EntreeStockResult>> EntreeStock(EntreeStockCommand command, CancellationToken cancellationToken)
         {
             return Ok(await _sender.Send(command, cancellationToken));
+        }
+
+        /// <summary>Seuil d'alerte d'une ligne de stock (0 = pas d'alerte).</summary>
+        [HttpPut("{id:guid}/seuil-alerte")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ModifierSeuilAlerte(Guid id, ModifierSeuilAlerteCommand command, CancellationToken cancellationToken)
+        {
+            await _sender.Send(command with { StockProduitId = id }, cancellationToken);
+            return NoContent();
+        }
+
+        /// <summary>Historique des mouvements d'une ligne de stock (entrées, réservations, sorties, retours...).</summary>
+        [HttpGet("{id:guid}/mouvements")]
+        [Authorize(Roles = Consultation)]
+        [ProducesResponseType(typeof(PaginatedList<MouvementStockDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PaginatedList<MouvementStockDto>>> GetMouvements(Guid id, [FromQuery] int pageNumber = 1, CancellationToken cancellationToken = default)
+        {
+            return Ok(await _sender.Send(new GetMouvementsStockQuery { StockProduitId = id, PageNumber = pageNumber }, cancellationToken));
         }
 
         /// <summary>Surplus fournisseur (§30), par défaut ceux qui attendent une décision.</summary>

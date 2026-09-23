@@ -256,3 +256,63 @@ export interface Adresse {
 export interface ClientDetail extends Client {
     adresses: Adresse[];
 }
+
+// ---------- Stock ----------
+
+export interface StockProduit {
+    id: string;
+    produitId: string;
+    produitReference: string;
+    produitNom: string;
+    entrepotId: string;
+    entrepotNom: string;
+    quantitePhysique: number;
+    quantiteReservee: number;
+    quantiteDisponible: number;
+    quantiteEnTransit: number;
+    quantiteDefectueuse: number;
+    seuilAlerte: number;
+}
+
+export interface Entrepot {
+    id: string;
+    nom: string;
+    adresse: string;
+    actif: boolean;
+}
+
+export interface MouvementStock {
+    id: string;
+    type: string;
+    quantite: number;
+    dateMouvement: string;
+    motif: string;
+    reference: string;
+    commandeId: string | null;
+    commandeReference: string | null;
+    ticketSAVId: string | null;
+}
+
+export interface EcartReception {
+    id: string;
+    reference: string;
+    produitId: string;
+    produitNom: string;
+    entrepotId: string;
+    entrepotNom: string;
+    quantiteCommandee: number;
+    quantiteRecue: number;
+    surplus: number;
+    statut: string;
+    dateConstat: string;
+    dateDecision: string | null;
+    motifDecision: string | null;
+}
+
+export interface ResultatEntreeStock {
+    quantitePhysique: number;
+    quantiteDisponible: number;
+    commandesReservees: string[];
+    surplusEnAttente: number;
+    ecartId: string | null;
+}

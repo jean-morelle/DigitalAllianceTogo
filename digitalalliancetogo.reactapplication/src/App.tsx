@@ -14,6 +14,7 @@ import { ProposerModificationPage } from '@/pages/commandes/ProposerModification
 import { DevisPage } from '@/pages/devis/DevisPage';
 import { DevisFormPage } from '@/pages/devis/DevisFormPage';
 import { DevisDetailPage } from '@/pages/devis/DevisDetailPage';
+import { StockPage } from '@/pages/stock/StockPage';
 
 function BientotDisponible({ titre }: { titre: string }) {
     return (
@@ -47,7 +48,7 @@ export default function App() {
                     <Route path="devis/nouveau" element={<RequireRole roles={[Roles.Commercial]}><DevisFormPage /></RequireRole>} />
                     <Route path="devis/:id" element={<RequireRole roles={[Roles.Commercial]}><DevisDetailPage /></RequireRole>} />
                     <Route path="devis/:id/modifier" element={<RequireRole roles={[Roles.Commercial]}><DevisFormPage /></RequireRole>} />
-                    <Route path="stock" element={<BientotDisponible titre="Stock" />} />
+                    <Route path="stock" element={<RequireRole roles={[Roles.GestionnaireStock, Roles.Commercial]}><StockPage /></RequireRole>} />
                     <Route path="livraisons" element={<BientotDisponible titre="Livraisons" />} />
                     <Route path="sav" element={<BientotDisponible titre="SAV" />} />
                     <Route path="finance" element={<BientotDisponible titre="Remboursements & avoirs" />} />

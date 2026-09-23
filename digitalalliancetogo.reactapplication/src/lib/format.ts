@@ -78,6 +78,16 @@ const LIBELLES: Record<string, string> = {
     EnAttenteClient: 'Attente client',
     Refusee: 'Refusée',
     Retiree: 'Retirée',
+    // Stock : mouvements et écarts fournisseur
+    Entree: 'Entrée',
+    Sortie: 'Sortie',
+    Reservation: 'Réservation',
+    Liberation: 'Libération',
+    Retour: 'Retour',
+    Ajustement: 'Ajustement',
+    EnAttenteDecision: 'À décider',
+    IntegreAuStock: 'Intégré au stock',
+    RetourneFournisseur: 'Retourné au fournisseur',
     // Modes
     Externe: 'Mobile Money / virement',
     Integre: 'Paiement en ligne',
@@ -99,6 +109,7 @@ const TONS: Record<string, Ton> = {
     DecisionCommerciale: 'attention', AnnulationEnCours: 'attention', LivreeAvecReserve: 'attention', CommandeCreee: 'attention',
     PaiementEchoue: 'danger', Echoue: 'danger', Echouee: 'danger', LivraisonEchoueeRefusClient: 'danger', Refuse: 'danger',
     Refusee: 'danger', Expire: 'danger',
+    EnAttenteDecision: 'attention', IntegreAuStock: 'succes', Entree: 'succes', Reservation: 'info', Sortie: 'info',
     EnTransit: 'info', PreparationEnCours: 'info', EnReparation: 'info', RemplacementEnCours: 'info', Planifiee: 'info', Envoye: 'info',
 };
 
