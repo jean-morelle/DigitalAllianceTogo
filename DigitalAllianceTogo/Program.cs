@@ -53,6 +53,10 @@ builder.Services.AddHostedService<ExpirationCommandesService>();
 // Register PasswordHasher
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+// Fichiers de preuve (paiement, livraison) : sur disque, hors wwwroot, servis uniquement via l'API
+builder.Services.AddSingleton<IStockageFichiers>(new StockageFichiersLocal(
+    builder.Configuration["Fichiers:Dossier"] ?? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "fichiers")));
+
 var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
 builder.Services.Configure<JwtSettings>(jwtSection);
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

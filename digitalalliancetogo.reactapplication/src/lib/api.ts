@@ -89,7 +89,45 @@ function messageParDefaut(status: number): string {
     }
 }
 
+export interface FichierEnvoye {
+    url: string;
+    contentType: string;
+    taille: number;
+}
+
+/** Envoi multipart (le navigateur fixe lui-même le Content-Type et la frontière). */
+async function envoyerFichier(categorie: 'paiements' | 'livraisons', fichier: Blob, nom: string): Promise<FichierEnvoye> {
+    const donnees = new FormData();
+    donnees.append('fichier', fichier, nom);
+    const token = jeton();
+    const reponse = await fetch(`/api/fichiers/${categorie}`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: donnees,
+    });
+    if (reponse.status === 401) {
+        window.dispatchEvent(new Event('dat:session-expiree'));
+        throw new ApiError(401, 'Votre session a expiré, reconnectez-vous.');
+    }
+    if (reponse.status === 413) throw new ApiError(413, 'Le fichier dépasse 5 Mo : réduisez la photo.');
+    if (!reponse.ok) {
+        const probleme = (await reponse.json().catch(() => ({}))) as ProblemDetails;
+        throw new ApiError(reponse.status, probleme.errors ? Object.values(probleme.errors).flat().join(' ') : probleme.detail ?? 'Envoi impossible.');
+    }
+    return (await reponse.json()) as FichierEnvoye;
+}
+
+/** Fichier protégé de l'API, récupéré avec le jeton (une balise <img> ou <a> ne l'enverrait pas). */
+async function lireFichier(chemin: string): Promise<Blob> {
+    const token = jeton();
+    const reponse = await fetch(chemin, { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+    if (!reponse.ok) throw new ApiError(reponse.status, reponse.status === 404 ? 'Fichier introuvable.' : 'Lecture du fichier impossible.');
+    return reponse.blob();
+}
+
 export const api = {
+    envoyerFichier,
+    lireFichier,
     get: <T>(chemin: string, parametres?: Parametres) => requete<T>('GET', chemin, undefined, parametres),
     post: <T = void>(chemin: string, corps?: unknown) => requete<T>('POST', chemin, corps ?? {}),
     put: <T = void>(chemin: string, corps?: unknown) => requete<T>('PUT', chemin, corps ?? {}),

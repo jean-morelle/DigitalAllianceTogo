@@ -1,3 +1,4 @@
+using DigitalAllianceTogo.Application.Fichiers;
 using FluentValidation;
 
 namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
@@ -12,9 +13,10 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
                 .MaximumLength(100);
             RuleFor(x => x.PreuveUrl)
                 .MaximumLength(500)
-                .Must(url => Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+                // Capture envoyée à l'API (/api/fichiers/...) ou lien web
+                .Must(ReglesFichiers.EstLienPreuveValide)
                 .When(x => !string.IsNullOrWhiteSpace(x.PreuveUrl))
-                .WithMessage("Le lien de la preuve doit être une adresse web valide.");
+                .WithMessage("La preuve doit être un fichier envoyé ou une adresse web valide.");
         }
     }
 }

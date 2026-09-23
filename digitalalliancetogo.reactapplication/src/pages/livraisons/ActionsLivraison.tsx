@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DialogueAction } from '@/components/DialogueAction';
+import { EnvoiFichier, PadSignature } from '@/components/Fichiers';
 import { api } from '@/lib/api';
 import type { Livraison, Livreur } from '@/lib/types';
 
@@ -97,8 +98,8 @@ export function BoutonRemettre({ livraison }: { livraison: Pick<Livraison, 'id' 
 /** Le livreur confirme la remise au client, avec preuve (photo ou signature) et GPS si possible. */
 export function DialogueLivree({ livraison }: { livraison: Livraison }) {
     const rafraichir = useRafraichirLivraisons();
-    const [photoUrl, setPhotoUrl] = useState('');
-    const [signatureUrl, setSignatureUrl] = useState('');
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+    const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
     const [reserve, setReserve] = useState('');
     const [commentaire, setCommentaire] = useState('');
     const [gps, setGps] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -121,8 +122,8 @@ export function DialogueLivree({ livraison }: { livraison: Livraison }) {
             description="Une photo ou une signature du client est obligatoire comme preuve."
             libelleConfirmer="Confirmer la livraison"
             onConfirmer={() => executer(api.post(`/livraisons/${livraison.id}/livree`, {
-                photoUrl: photoUrl.trim() || null,
-                signatureUrl: signatureUrl.trim() || null,
+                photoUrl,
+                signatureUrl,
                 latitude: gps?.latitude ?? null,
                 longitude: gps?.longitude ?? null,
                 commentaire: commentaire.trim() || null,
@@ -131,12 +132,12 @@ export function DialogueLivree({ livraison }: { livraison: Livraison }) {
         >
             <div className="grid gap-3">
                 <div className="grid gap-2">
-                    <Label htmlFor="photo">Lien de la photo du colis remis</Label>
-                    <Input id="photo" type="url" placeholder="https://..." value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} />
+                    <Label>Photo du colis remis</Label>
+                    <EnvoiFichier categorie="livraisons" camera valeur={photoUrl} surChangement={setPhotoUrl} libelle="Prendre une photo" />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="signature">Lien de la signature du client</Label>
-                    <Input id="signature" type="url" placeholder="https://..." value={signatureUrl} onChange={e => setSignatureUrl(e.target.value)} />
+                    <Label>Signature du client</Label>
+                    <PadSignature valeur={signatureUrl} surChangement={setSignatureUrl} />
                 </div>
                 <Button type="button" variant="outline" onClick={localiser} disabled={localisation}>
                     <LocateFixed /> {gps ? `Position : ${gps.latitude}, ${gps.longitude}` : localisation ? 'Localisation...' : 'Enregistrer ma position GPS'}

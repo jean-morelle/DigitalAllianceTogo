@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, ExternalLink, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Chargement, EnTetePage, EtatErreur, EtatVide, StatutBadge } from '@/components/commun';
 import { DialogueAction } from '@/components/DialogueAction';
+import { LienPreuve } from '@/components/Fichiers';
 import { Pagination } from '@/components/Pagination';
 import { api } from '@/lib/api';
 import { depuis, formatDate, formatFcfa, libelle } from '@/lib/format';
@@ -99,11 +100,7 @@ export function PaiementsPage() {
                                             <div className="font-mono text-sm">{p.referenceExterne ?? '—'}</div>
                                             <div className="text-muted-foreground flex items-center gap-2 text-xs">
                                                 {libelle(p.mode)}
-                                                {p.preuveUrl && (
-                                                    <a href={p.preuveUrl} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline">
-                                                        preuve <ExternalLink className="size-3" />
-                                                    </a>
-                                                )}
+                                                {p.preuveUrl && <LienPreuve url={p.preuveUrl} libelle="preuve" />}
                                             </div>
                                             {p.motifRejet && <div className="text-xs text-red-600">{p.motifRejet}</div>}
                                         </TableCell>

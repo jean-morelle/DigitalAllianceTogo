@@ -1,5 +1,6 @@
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Fichiers;
 using DigitalAllianceTogo.Application.Livraisons.Common;
 using DigitalAllianceTogo.Application.Sav.Common;
 using DigitalAllianceTogo.Application.Stock.Common;
@@ -37,10 +38,11 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.ConfirmerLivraison
                 .Must(x => !string.IsNullOrWhiteSpace(x.PhotoUrl) || !string.IsNullOrWhiteSpace(x.SignatureUrl))
                 .WithName("Preuve")
                 .WithMessage("Une photo ou une signature est obligatoire comme preuve de livraison.");
-            RuleFor(x => x.PhotoUrl).MaximumLength(1000).Must(EstUneUrl!).When(x => !string.IsNullOrWhiteSpace(x.PhotoUrl))
-                .WithMessage("Le lien de la photo doit être une adresse web valide.");
-            RuleFor(x => x.SignatureUrl).MaximumLength(1000).Must(EstUneUrl!).When(x => !string.IsNullOrWhiteSpace(x.SignatureUrl))
-                .WithMessage("Le lien de la signature doit être une adresse web valide.");
+            // Fichier envoyé à l'API (/api/fichiers/...) ou lien web
+            RuleFor(x => x.PhotoUrl).MaximumLength(1000).Must(ReglesFichiers.EstLienPreuveValide)
+                .WithMessage("La photo doit être un fichier envoyé ou une adresse web valide.");
+            RuleFor(x => x.SignatureUrl).MaximumLength(1000).Must(ReglesFichiers.EstLienPreuveValide)
+                .WithMessage("La signature doit être un fichier envoyé ou une adresse web valide.");
             RuleFor(x => x.Latitude).InclusiveBetween(-90, 90);
             RuleFor(x => x.Longitude).InclusiveBetween(-180, 180);
             RuleFor(x => x.Longitude).NotNull().When(x => x.Latitude.HasValue).WithMessage("Latitude et longitude vont ensemble.");
@@ -48,9 +50,6 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.ConfirmerLivraison
             RuleFor(x => x.Commentaire).MaximumLength(1000);
             RuleFor(x => x.Reserve).MaximumLength(1000);
         }
-
-        private static bool EstUneUrl(string url) =>
-            Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
     }
 
     public class ConfirmerLivraisonCommandHandler : IRequestHandler<ConfirmerLivraisonCommand>

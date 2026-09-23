@@ -19,6 +19,8 @@ import { formatDate, formatFcfa, libelle } from '@/lib/format';
 import type { CommandeDetail, JournalAudit, LigneCommande, Livraison, PaginatedList, VersionCommande } from '@/lib/types';
 import { DialoguePlanifier } from '@/pages/livraisons/ActionsLivraison';
 import { DialogueNouveauTicket } from '@/pages/sav/DialogueNouveauTicket';
+import { DialoguePaiement } from './DialoguePaiement';
+import { LienPreuve } from '@/components/Fichiers';
 import { cn } from '@/lib/utils';
 
 type Mode = 'Remboursement' | 'Avoir';
@@ -231,6 +233,9 @@ export function CommandeDetailPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                    {aRole(Roles.Commercial) && (s === 'CommandeCreee' || s === 'PaiementEchoue') && c.resteAPayer > 0 && (
+                        <DialoguePaiement commandeId={c.id} resteAPayer={c.resteAPayer} />
+                    )}
                     {aRole(Roles.Commercial) && !proposition && ['PaiementConfirme', 'EnAttenteDisponibilite', 'StockReserve', 'PreparationEnCours', 'PretePourLivraison'].includes(s) && (
                         <Button variant="outline" asChild><Link to={`/commandes/${c.id}/modifier`}><FilePen /> Proposer une modification</Link></Button>
                     )}
@@ -317,7 +322,7 @@ export function CommandeDetailPage() {
                                     <TableBody>
                                         {c.paiements.map(p => (
                                             <TableRow key={p.id}>
-                                                <TableCell><div className="font-medium">{p.reference}</div><div className="text-muted-foreground font-mono text-xs">{p.referenceExterne}</div></TableCell>
+                                                <TableCell><div className="font-medium">{p.reference}</div><div className="text-muted-foreground font-mono text-xs">{p.referenceExterne}</div>{p.preuveUrl && <div className="text-xs"><LienPreuve url={p.preuveUrl} libelle="preuve" /></div>}</TableCell>
                                                 <TableCell>{libelle(p.mode)}</TableCell>
                                                 <TableCell>v{p.numeroVersion}</TableCell>
                                                 <TableCell className="text-right tabular-nums">{formatFcfa(p.montant)}</TableCell>

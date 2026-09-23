@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Chargement, EnTetePage, EtatErreur, EtatVide, StatutBadge } from '@/components/commun';
 import { Pagination } from '@/components/Pagination';
+import { LienPreuve } from '@/components/Fichiers';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { formatDate, libelle } from '@/lib/format';
@@ -167,8 +168,8 @@ function ToutesLivraisons() {
                                             {l.reserve && <div className="mt-1 max-w-48 text-xs text-amber-700">Réserve : {l.reserve}</div>}
                                             {l.preuve && (
                                                 <div className="mt-1 text-xs">
-                                                    {l.preuve.photoUrl && <a className="text-primary mr-2 hover:underline" href={l.preuve.photoUrl} target="_blank" rel="noreferrer">photo</a>}
-                                                    {l.preuve.signatureUrl && <a className="text-primary mr-2 hover:underline" href={l.preuve.signatureUrl} target="_blank" rel="noreferrer">signature</a>}
+                                                    {l.preuve.photoUrl && <span className="mr-2"><LienPreuve url={l.preuve.photoUrl} libelle="photo" /></span>}
+                                                    {l.preuve.signatureUrl && <span className="mr-2"><LienPreuve url={l.preuve.signatureUrl} libelle="signature" /></span>}
                                                     {l.preuve.latitude !== null && (
                                                         <a className="text-primary hover:underline" target="_blank" rel="noreferrer"
                                                             href={`https://www.google.com/maps?q=${l.preuve.latitude},${l.preuve.longitude}`}>GPS</a>

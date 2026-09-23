@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Fichiers envoyés par les utilisateurs (preuves de paiement / livraison)
+**/App_Data/
