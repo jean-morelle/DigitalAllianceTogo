@@ -23,8 +23,30 @@ namespace DigitalAllianceTogo.Application.Commandes.Dtos
         public List<Finance.Queries.RemboursementDto> Remboursements { get; set; } = new();
         public List<Finance.Queries.AvoirDto> Avoirs { get; set; } = new();
 
+        /// <summary>Total de la version active − payé net (négatif : trop-perçu à rendre).</summary>
+        public decimal ResteAPayer { get; set; }
+
+        /// <summary>Historique complet des versions (§20) : jamais écrasées, propositions comprises.</summary>
+        public List<VersionCommandeDto> Versions { get; set; } = new();
+
         /// <summary>Date limite pour payer (ou repayer), si la commande attend le client.</summary>
         public DateTime? DateLimitePaiement { get; set; }
+    }
+
+    public class VersionCommandeDto
+    {
+        public Guid Id { get; set; }
+        public int NumeroVersion { get; set; }
+        public string Statut { get; set; } = string.Empty;
+        public bool Active { get; set; }
+        public DateTime DateCreation { get; set; }
+        public string? MotifModification { get; set; }
+        public string? MotifRefus { get; set; }
+        public DateTime? DateReponse { get; set; }
+        public decimal SousTotal { get; set; }
+        public decimal Remise { get; set; }
+        public decimal Total { get; set; }
+        public List<LigneCommandeDto> Lignes { get; set; } = new();
     }
 
     public class AdresseLivraisonCommandeDto

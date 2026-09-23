@@ -1,4 +1,5 @@
 using DigitalAllianceTogo.Application.Commandes.Common;
+using DigitalAllianceTogo.Application.Commandes.Commands.Modification;
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Finance.Common;
@@ -120,6 +121,17 @@ namespace DigitalAllianceTogo.Application.Commandes.Commands.AnnulerCommande
 
                 default:
                     throw new ConflictException($"Une commande au statut {commande.Statut} ne peut pas être annulée.");
+            }
+
+            // Une proposition de modification en cours n'a plus d'objet
+            var propositions = await _context.VersionsCommande
+                .Where(v => v.CommandeId == commande.Id && ModificationHelper.StatutsEnCours.Contains(v.Statut))
+                .ToListAsync(cancellationToken);
+            foreach (var proposition in propositions)
+            {
+                proposition.Statut = StatutVersionCommande.Retiree;
+                proposition.MotifRefus = "Commande annulée";
+                proposition.DateReponse = DateTime.UtcNow;
             }
 
             // xmin de la commande : pas d'annulation concurrente d'une confirmation de paiement

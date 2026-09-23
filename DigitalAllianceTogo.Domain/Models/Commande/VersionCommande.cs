@@ -11,6 +11,19 @@
         public decimal Total { get; set; }
         public bool Active { get; set; } = true;
 
+        // Une fois Acceptée, le contenu (lignes, montants) ne change plus jamais :
+        // seul le drapeau Active bascule quand une version suivante est acceptée.
+        public Enum.StatutVersionCommande Statut { get; set; } = Enum.StatutVersionCommande.Acceptee;
+
+        // Traçabilité de la proposition de modification (§20-21)
+        public Guid? CreeParId { get; set; }
+        public Guid? ValideParId { get; set; }
+        public DateTime? DateReponse { get; set; }
+        public string? MotifRefus { get; set; }
+
+        // Baisse de prix : ce que le client a choisi pour le trop-perçu
+        public Enum.ModeRegularisation? Regularisation { get; set; }
+
         public Guid CommandeId { get; set; }
         public Commande Commande { get; set; } = null!;
 

@@ -42,12 +42,16 @@ namespace DigitalAllianceTogo.Application.TableauDeBord.Queries
                     _context.Devis.Where(d => d.Statut == StatutDevis.Brouillon && d.ValideParId != null).Select(d => d.DateCreation), ct));
                 files.Add(await FileAsync("devis-modification-demandee", "Devis dont le client demande une modification", Roles.Commercial,
                     _context.Devis.Where(d => d.Statut == StatutDevis.ModificationDemandee).Select(d => d.DateCreation), ct));
+                files.Add(await FileAsync("modifications-en-attente-client", "Modifications de commande attendant la réponse du client", Roles.Commercial,
+                    _context.VersionsCommande.Where(v => v.Statut == StatutVersionCommande.EnAttenteClient).Select(v => v.DateCreation), ct));
                 files.Add(await FileAsync("sav-decision-commerciale", "Tickets SAV irréparables : choix du client à enregistrer", Roles.Commercial,
                     _context.TicketsSAV.Where(t => t.Statut == StatutSav.DecisionCommerciale).Select(t => t.DateCreation), ct));
             }
 
             if (Voit(Roles.Admin))
             {
+                files.Add(await FileAsync("modifications-a-valider", "Modifications de commande hors seuil à valider", Roles.Admin,
+                    _context.VersionsCommande.Where(v => v.Statut == StatutVersionCommande.EnValidationAdmin).Select(v => v.DateCreation), ct));
                 files.Add(await FileAsync("devis-remise-exceptionnelle", "Remises exceptionnelles à valider", Roles.Admin,
                     _context.Devis.Where(d => d.Statut == StatutDevis.ValidationInterne).Select(d => d.DateCreation), ct));
                 files.Add(await FileAsync("remboursements-a-valider", "Remboursements à valider", Roles.Admin,

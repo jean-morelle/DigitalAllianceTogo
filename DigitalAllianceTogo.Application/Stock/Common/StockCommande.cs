@@ -209,6 +209,39 @@ namespace DigitalAllianceTogo.Application.Stock.Common
         public static async Task<bool> ADuStockReserveAsync(IApplicationDbContext context, Guid commandeId, CancellationToken cancellationToken) =>
             (await ReservesAsync(context, DeCommande(commandeId), cancellationToken)).Count > 0;
 
+        /// <summary>Unités déjà réservées pour la commande, par produit.</summary>
+        public static async Task<Dictionary<Guid, int>> ReserveParProduitAsync(IApplicationDbContext context, Guid commandeId, CancellationToken cancellationToken) =>
+            (await ReservesAsync(context, DeCommande(commandeId), cancellationToken))
+                .GroupBy(r => r.Stock.ProduitId)
+                .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantite));
+
+        /// <summary>
+        /// Modification de commande (§20) : libère ce qui est réservé au-delà des besoins de la
+        /// nouvelle version (produit retiré ou quantité réduite). Le reste de la réservation est gardé.
+        /// </summary>
+        public static async Task<List<object>> LibererExcedentAsync(
+            IApplicationDbContext context, CommandeEntity commande, IReadOnlyDictionary<Guid, int> besoins, CancellationToken cancellationToken)
+        {
+            var porteur = DeCommande(commande.Id);
+            var reserves = await ReservesAsync(context, porteur, cancellationToken);
+            var liberations = new List<object>();
+
+            foreach (var parProduit in reserves.GroupBy(r => r.Stock.ProduitId))
+            {
+                var excedent = parProduit.Sum(r => r.Quantite) - besoins.GetValueOrDefault(parProduit.Key);
+                foreach (var (stock, quantite) in parProduit)
+                {
+                    if (excedent <= 0) break;
+                    var aLiberer = Math.Min(excedent, quantite);
+                    stock.QuantiteReservee -= aLiberer;
+                    excedent -= aLiberer;
+                    context.MouvementsStock.Add(Mouvement(TypeMouvementStock.Liberation, aLiberer, "Modification de la commande", commande.Reference, porteur, stock.Id));
+                    liberations.Add(new { stock.ProduitId, stock.EntrepotId, Quantite = aLiberer });
+                }
+            }
+            return liberations;
+        }
+
         /// <summary>Quantité réservée pour le remplacement d'un ticket SAV.</summary>
         public static async Task<int> QuantiteReserveeSavAsync(IApplicationDbContext context, Guid ticketId, CancellationToken cancellationToken) =>
             (await ReservesAsync(context, DuTicket(ticketId), cancellationToken)).Sum(r => r.Quantite);

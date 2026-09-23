@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Commandes.Common;
 using DigitalAllianceTogo.Application.Commandes.Dtos;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Finance.Common;
 using DigitalAllianceTogo.Application.Finance.Queries;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -63,10 +64,36 @@ namespace DigitalAllianceTogo.Application.Commandes.Queries.GetCommandeById
                 })
                 .ToListAsync(cancellationToken);
 
+            var versions = await _context.VersionsCommande.AsNoTracking()
+                .Include(v => v.Lignes).ThenInclude(l => l.Produit)
+                .Where(v => v.CommandeId == commande.Id)
+                .OrderBy(v => v.NumeroVersion)
+                .ToListAsync(cancellationToken);
+
             return new CommandeDetailDto
             {
                 Remboursements = remboursements,
                 Avoirs = avoirs,
+                ResteAPayer = version.Total - await SoldeCommande.PayeNetAsync(_context, commande.Id, cancellationToken),
+                Versions = versions.Select(v => new VersionCommandeDto
+                {
+                    Id = v.Id,
+                    NumeroVersion = v.NumeroVersion,
+                    Statut = v.Statut.ToString(),
+                    Active = v.NumeroVersion == commande.VersionActive,
+                    DateCreation = v.DateCreation,
+                    MotifModification = v.MotifModification,
+                    MotifRefus = v.MotifRefus,
+                    DateReponse = v.DateReponse,
+                    SousTotal = v.SousTotal,
+                    Remise = v.Remise,
+                    Total = v.Total,
+                    Lignes = v.Lignes.Select(l => new LigneCommandeDto
+                    {
+                        Id = l.Id, ProduitId = l.ProduitId, ProduitReference = l.Produit.Reference, ProduitNom = l.Produit.Nom,
+                        Quantite = l.Quantite, PrixUnitaire = l.PrixUnitaire, Remise = l.Remise, Total = l.Total
+                    }).ToList()
+                }).ToList(),
                 Id = commande.Id,
                 Reference = commande.Reference,
                 Statut = commande.Statut.ToString(),

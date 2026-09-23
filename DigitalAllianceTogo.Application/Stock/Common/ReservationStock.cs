@@ -32,6 +32,14 @@ namespace DigitalAllianceTogo.Application.Stock.Common
                 .Select(g => new { ProduitId = g.Key, Quantite = g.Sum(l => l.Quantite) })
                 .ToListAsync(cancellationToken);
 
+            // Après une modification de commande (§20), une partie peut déjà être réservée :
+            // on ne réserve que ce qui manque (tout ou rien sur ce manque).
+            var dejaReserve = await StockCommande.ReserveParProduitAsync(context, commande.Id, cancellationToken);
+            besoins = besoins
+                .Select(b => new { b.ProduitId, Quantite = b.Quantite - dejaReserve.GetValueOrDefault(b.ProduitId) })
+                .Where(b => b.Quantite > 0)
+                .ToList();
+
             var produitIds = besoins.Select(b => b.ProduitId).ToList();
 
             // Entités suivies : si une réservation précédente (même requête) a déjà

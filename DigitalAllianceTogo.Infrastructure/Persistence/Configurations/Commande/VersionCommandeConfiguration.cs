@@ -12,6 +12,18 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Commande
             builder.HasKey(v => v.Id);
 
             builder.Property(v => v.MotifModification).HasMaxLength(1000);
+            builder.Property(v => v.MotifRefus).HasMaxLength(500);
+
+            builder.Property(v => v.Statut)
+                .HasConversion<string>()
+                .HasMaxLength(30)
+                .IsRequired();
+            builder.Property(v => v.Regularisation)
+                .HasConversion<string>()
+                .HasMaxLength(30);
+
+            // Propositions de modification en attente (supervision)
+            builder.HasIndex(v => v.Statut);
 
             // Un même numéro de version ne peut apparaître deux fois pour la même commande
             builder.HasIndex(v => new { v.CommandeId, v.NumeroVersion }).IsUnique();

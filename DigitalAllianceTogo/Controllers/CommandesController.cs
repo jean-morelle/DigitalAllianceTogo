@@ -1,5 +1,6 @@
 using DigitalAllianceTogo.Application.Commandes.Commands.AnnulerCommande;
 using DigitalAllianceTogo.Application.Commandes.Commands.CloturerCommande;
+using DigitalAllianceTogo.Application.Commandes.Commands.Modification;
 using DigitalAllianceTogo.Application.Commandes.Commands.Preparation;
 using DigitalAllianceTogo.Application.Commandes.Commands.ReceptionnerRetour;
 using DigitalAllianceTogo.Application.Commandes.Dtos;
@@ -80,6 +81,54 @@ namespace DigitalAllianceTogo.Api.Controllers
         [ProducesResponseType(typeof(PayerAvecAvoirResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<PayerAvecAvoirResult>> PayerAvecAvoir(Guid id, PayerAvecAvoirCommand command, CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(command with { CommandeId = id }, cancellationToken));
+        }
+
+        /// <summary>
+        /// Commercial : propose une nouvelle version d'une commande payée (§20). Soumise à
+        /// l'Administrateur si la hausse ou la remise dépasse les seuils (§21), sinon au client.
+        /// </summary>
+        [HttpPost("{id:guid}/modifications")]
+        [Authorize(Roles = Personnel)]
+        [ProducesResponseType(typeof(ProposerModificationResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<ProposerModificationResult>> ProposerModification(Guid id, ProposerModificationCommand command, CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(command with { CommandeId = id }, cancellationToken));
+        }
+
+        /// <summary>Administrateur : valide (→ client) ou refuse une proposition hors seuil.</summary>
+        [HttpPost("{id:guid}/modifications/decision-admin")]
+        [Authorize(Roles = Roles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> DeciderModification(Guid id, DeciderModificationAdminCommand command, CancellationToken cancellationToken)
+        {
+            await _sender.Send(command with { CommandeId = id }, cancellationToken);
+            return NoContent();
+        }
+
+        /// <summary>Commercial : retire la proposition en cours.</summary>
+        [HttpPost("{id:guid}/modifications/retirer")]
+        [Authorize(Roles = Personnel)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> RetirerModification(Guid id, RetirerModificationCommand command, CancellationToken cancellationToken)
+        {
+            await _sender.Send(command with { CommandeId = id }, cancellationToken);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Client : accepte ou refuse la nouvelle version. Acceptée : complément à payer si
+        /// le prix monte, remboursement ou avoir (validé par l'Admin) s'il baisse.
+        /// </summary>
+        [HttpPost("{id:guid}/modifications/reponse")]
+        [Authorize(Roles = PersonnelOuClient)]
+        [ProducesResponseType(typeof(RepondreModificationResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<RepondreModificationResult>> RepondreModification(Guid id, RepondreModificationCommand command, CancellationToken cancellationToken)
         {
             return Ok(await _sender.Send(command with { CommandeId = id }, cancellationToken));
         }

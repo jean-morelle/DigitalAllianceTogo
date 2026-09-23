@@ -70,6 +70,16 @@ namespace DigitalAllianceTogo.Application.Finance.Common
             return montant;
         }
 
+        /// <summary>
+        /// Baisse de prix après modification de commande (§21) : le trop-perçu est rendu par
+        /// remboursement ou avoir, au choix du client, après validation de l'Administrateur.
+        /// Rattaché à la nouvelle version.
+        /// </summary>
+        public static void CreerPourModification(
+            IApplicationDbContext context, IAuditService audit, CommandeEntity commande, Guid versionId,
+            ModeRegularisation mode, decimal montant, string motif) =>
+            Ajouter(context, audit, mode, montant, motif, commande.Id, versionId, ticket: null, commande.Reference);
+
         private static void Ajouter(
             IApplicationDbContext context, IAuditService audit, ModeRegularisation mode, decimal montant, string motif,
             Guid commandeId, Guid versionId, Domain.Models.SAV.TicketSAV? ticket, string referenceCommande)
