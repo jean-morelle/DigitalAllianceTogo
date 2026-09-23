@@ -10,6 +10,10 @@ import { TableauDeBordPage } from '@/pages/TableauDeBordPage';
 import { PaiementsPage } from '@/pages/PaiementsPage';
 import { CommandesPage } from '@/pages/commandes/CommandesPage';
 import { CommandeDetailPage } from '@/pages/commandes/CommandeDetailPage';
+import { ProposerModificationPage } from '@/pages/commandes/ProposerModificationPage';
+import { DevisPage } from '@/pages/devis/DevisPage';
+import { DevisFormPage } from '@/pages/devis/DevisFormPage';
+import { DevisDetailPage } from '@/pages/devis/DevisDetailPage';
 
 function BientotDisponible({ titre }: { titre: string }) {
     return (
@@ -38,7 +42,11 @@ export default function App() {
                     <Route path="paiements" element={<RequireRole roles={[Roles.Commercial]}><PaiementsPage /></RequireRole>} />
                     <Route path="commandes" element={<RequireRole roles={[Roles.Commercial, Roles.GestionnaireStock]}><CommandesPage /></RequireRole>} />
                     <Route path="commandes/:id" element={<RequireRole roles={[Roles.Commercial, Roles.GestionnaireStock]}><CommandeDetailPage /></RequireRole>} />
-                    <Route path="devis" element={<BientotDisponible titre="Devis" />} />
+                    <Route path="commandes/:id/modifier" element={<RequireRole roles={[Roles.Commercial]}><ProposerModificationPage /></RequireRole>} />
+                    <Route path="devis" element={<RequireRole roles={[Roles.Commercial]}><DevisPage /></RequireRole>} />
+                    <Route path="devis/nouveau" element={<RequireRole roles={[Roles.Commercial]}><DevisFormPage /></RequireRole>} />
+                    <Route path="devis/:id" element={<RequireRole roles={[Roles.Commercial]}><DevisDetailPage /></RequireRole>} />
+                    <Route path="devis/:id/modifier" element={<RequireRole roles={[Roles.Commercial]}><DevisFormPage /></RequireRole>} />
                     <Route path="stock" element={<BientotDisponible titre="Stock" />} />
                     <Route path="livraisons" element={<BientotDisponible titre="Livraisons" />} />
                     <Route path="sav" element={<BientotDisponible titre="SAV" />} />

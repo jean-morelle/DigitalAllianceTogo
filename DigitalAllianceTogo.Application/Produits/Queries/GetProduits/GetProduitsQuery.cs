@@ -36,8 +36,9 @@ namespace DigitalAllianceTogo.Application.Produits.Queries.GetProduits
 
             if (!string.IsNullOrWhiteSpace(request.Recherche))
             {
-                var terme = request.Recherche.Trim();
-                query = query.Where(p => p.Nom.Contains(terme) || p.Reference.Contains(terme));
+                // Insensible à la casse : « hp » trouve « HP 250 G9 »
+                var terme = request.Recherche.Trim().ToLower();
+                query = query.Where(p => p.Nom.ToLower().Contains(terme) || p.Reference.ToLower().Contains(terme));
             }
 
             if (request.CategorieId.HasValue)

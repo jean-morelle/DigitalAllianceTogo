@@ -43,7 +43,8 @@ namespace DigitalAllianceTogo.Application.Devis.Queries.GetDevis
 
             if (!string.IsNullOrWhiteSpace(request.Recherche))
             {
-                var terme = request.Recherche.Trim();
+                // Références et codes clients sont en majuscules : « cmd-2026 » les trouve aussi
+                var terme = request.Recherche.Trim().ToUpperInvariant();
                 query = query.Where(d => d.Reference.Contains(terme) || d.Client.CodeClient.Contains(terme));
             }
 

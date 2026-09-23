@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Ban, CheckCheck, ClipboardCheck, Lock, PackageCheck, PackageOpen, Undo2 } from 'lucide-react';
+import { ArrowLeft, Ban, CheckCheck, ClipboardCheck, FilePen, Lock, PackageCheck, PackageOpen, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -221,6 +221,9 @@ export function CommandeDetailPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                    {aRole(Roles.Commercial) && !proposition && ['PaiementConfirme', 'EnAttenteDisponibilite', 'StockReserve', 'PreparationEnCours', 'PretePourLivraison'].includes(s) && (
+                        <Button variant="outline" asChild><Link to={`/commandes/${c.id}/modifier`}><FilePen /> Proposer une modification</Link></Button>
+                    )}
                     {aRole(Roles.GestionnaireStock) && s === 'StockReserve' && (
                         <Button onClick={() => agir('demarrer-preparation', 'Préparation démarrée.')}><PackageOpen /> Démarrer la préparation</Button>
                     )}

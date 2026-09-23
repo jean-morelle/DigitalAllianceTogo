@@ -53,7 +53,8 @@ namespace DigitalAllianceTogo.Application.Commandes.Queries.GetCommandes
 
             if (!string.IsNullOrWhiteSpace(request.Recherche))
             {
-                var terme = request.Recherche.Trim();
+                // Références et codes clients sont en majuscules : « cmd-2026 » les trouve aussi
+                var terme = request.Recherche.Trim().ToUpperInvariant();
                 query = query.Where(c => c.Reference.Contains(terme) || c.Client.CodeClient.Contains(terme));
             }
 

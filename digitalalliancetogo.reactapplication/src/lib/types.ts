@@ -176,3 +176,83 @@ export interface JournalAudit {
     avant: string | null;
     apres: string | null;
 }
+
+// ---------- Devis / clients / produits ----------
+
+export interface Devis {
+    id: string;
+    reference: string;
+    statut: string;
+    dateCreation: string;
+    dateValidite: string;
+    sousTotal: number;
+    remise: number;
+    total: number;
+    valideParEntreprise: boolean;
+    clientId: string;
+    codeClient: string;
+}
+
+export interface LigneDevis {
+    id: string;
+    produitId: string;
+    produitReference: string;
+    produitNom: string;
+    quantite: number;
+    prixUnitaire: number;
+    remise: number;
+    total: number;
+}
+
+export interface DevisDetail extends Devis {
+    tauxRemise: number;
+    valideParId: string | null;
+    dateValidation: string | null;
+    creeParId: string | null;
+    commentaireClient: string | null;
+    commentaireInterne: string | null;
+    commandeId: string | null;
+    lignes: LigneDevis[];
+}
+
+/** Ligne saisie dans un formulaire (devis ou modification de commande). */
+export interface LigneSaisie {
+    produitId: string;
+    quantite: number;
+    remise: number;
+}
+
+export interface Produit {
+    id: string;
+    reference: string;
+    nom: string;
+    prix: number;
+    actif: boolean;
+}
+
+export interface Client {
+    id: string;
+    codeClient: string;
+    type: string;
+    nom: string;
+    prenom: string | null;
+    raisonSociale: string | null;
+    telephone: string;
+    email: string | null;
+    source: string;
+    dateCreation: string;
+}
+
+export interface Adresse {
+    id: string;
+    libelle: string;
+    ligne1: string;
+    ligne2: string | null;
+    ville: string;
+    pays: string;
+    codePostal: string;
+}
+
+export interface ClientDetail extends Client {
+    adresses: Adresse[];
+}
