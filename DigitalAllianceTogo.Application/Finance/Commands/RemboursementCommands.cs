@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Finance.Common;
+using DigitalAllianceTogo.Application.Sav.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using DigitalAllianceTogo.Domain.Models.Finance;
 using FluentValidation;
@@ -94,6 +95,8 @@ namespace DigitalAllianceTogo.Application.Finance.Commands
             });
 
             await RegularisationFinanciere.CloturerSiRegulariseeAsync(_context, _audit, remboursement.Commande, cancellationToken);
+            if (remboursement.TicketSAVId is Guid ticketId)
+                await SavHelper.CloturerSiRegulariseAsync(_context, _audit, ticketId, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
 

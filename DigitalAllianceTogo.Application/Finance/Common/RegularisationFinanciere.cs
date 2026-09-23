@@ -40,6 +40,41 @@ namespace DigitalAllianceTogo.Application.Finance.Common
                 .Select(v => v.Id)
                 .FirstAsync(cancellationToken);
 
+            Ajouter(context, audit, mode, montant, motif, commande.Id, versionId, ticket: null, commande.Reference);
+            return montant;
+        }
+
+        /// <summary>
+        /// SAV irréparable, le client choisit remboursement ou avoir (§26) : montant = ce que le
+        /// client a réellement payé pour les unités concernées (prix de la ligne, remise globale
+        /// de la version répartie au prorata). La commande n'est pas touchée.
+        /// </summary>
+        public static async Task<decimal> CreerPourSavAsync(
+            IApplicationDbContext context,
+            IAuditService audit,
+            Domain.Models.SAV.TicketSAV ticket,
+            ModeRegularisation mode,
+            CancellationToken cancellationToken)
+        {
+            var ligne = await context.LignesCommande
+                .Include(l => l.VersionCommande).ThenInclude(v => v.Lignes)
+                .Include(l => l.VersionCommande).ThenInclude(v => v.Commande)
+                .FirstAsync(l => l.Id == ticket.LigneCommandeId, cancellationToken);
+            var version = ligne.VersionCommande;
+
+            var totalLignes = version.Lignes.Sum(l => l.Total);
+            var ratioRemiseGlobale = totalLignes == 0 ? 0 : version.Total / totalLignes;
+            var montant = Math.Round(ligne.Total / ligne.Quantite * ticket.Quantite * ratioRemiseGlobale, 0, MidpointRounding.AwayFromZero);
+
+            Ajouter(context, audit, mode, montant, $"SAV {ticket.Reference} : {ticket.Motif}",
+                version.CommandeId, version.Id, ticket, version.Commande.Reference);
+            return montant;
+        }
+
+        private static void Ajouter(
+            IApplicationDbContext context, IAuditService audit, ModeRegularisation mode, decimal montant, string motif,
+            Guid commandeId, Guid versionId, Domain.Models.SAV.TicketSAV? ticket, string referenceCommande)
+        {
             if (mode == ModeRegularisation.Avoir)
             {
                 var avoir = new Avoir
@@ -50,11 +85,12 @@ namespace DigitalAllianceTogo.Application.Finance.Common
                     DateCreation = DateTime.UtcNow,
                     Statut = StatutAvoir.EnAttente,
                     Motif = Tronquer(motif),
-                    CommandeId = commande.Id,
-                    VersionCommandeId = versionId
+                    CommandeId = commandeId,
+                    VersionCommandeId = versionId,
+                    TicketSAVId = ticket?.Id
                 };
                 context.Avoirs.Add(avoir);
-                audit.Enregistrer("DemandeAvoir", "Avoir", avoir.Id, apres: new { avoir.Reference, avoir.Montant, avoir.Motif, Commande = commande.Reference });
+                audit.Enregistrer("DemandeAvoir", "Avoir", avoir.Id, apres: new { avoir.Reference, avoir.Montant, avoir.Motif, Commande = referenceCommande, TicketSAV = ticket?.Reference });
             }
             else
             {
@@ -66,13 +102,13 @@ namespace DigitalAllianceTogo.Application.Finance.Common
                     DateDemande = DateTime.UtcNow,
                     Statut = StatutRemboursement.EnAttente,
                     Motif = Tronquer(motif),
-                    CommandeId = commande.Id,
-                    VersionCommandeId = versionId
+                    CommandeId = commandeId,
+                    VersionCommandeId = versionId,
+                    TicketSAVId = ticket?.Id
                 };
                 context.Remboursements.Add(remboursement);
-                audit.Enregistrer("DemandeRemboursement", "Remboursement", remboursement.Id, apres: new { remboursement.Reference, remboursement.Montant, remboursement.Motif, Commande = commande.Reference });
+                audit.Enregistrer("DemandeRemboursement", "Remboursement", remboursement.Id, apres: new { remboursement.Reference, remboursement.Montant, remboursement.Motif, Commande = referenceCommande, TicketSAV = ticket?.Reference });
             }
-            return montant;
         }
 
         /// <summary>
@@ -80,6 +116,7 @@ namespace DigitalAllianceTogo.Application.Finance.Common
         /// validé mais non exécuté, ou ÉCHOUÉ ; avoir pas encore mis à disposition.
         /// Évalué sur les entités suivies par EF : on voit les demandes ajoutées et les statuts
         /// modifiés dans la requête en cours, même pas encore enregistrés.
+        /// Les régularisations d'un SAV ne comptent pas : le SAV est indépendant de la commande (§24).
         /// </summary>
         public static async Task<bool> EnCoursAsync(IApplicationDbContext context, Guid commandeId, CancellationToken cancellationToken)
         {
@@ -87,8 +124,18 @@ namespace DigitalAllianceTogo.Application.Finance.Common
             await context.Remboursements.Where(r => r.CommandeId == commandeId).LoadAsync(cancellationToken);
             await context.Avoirs.Where(a => a.CommandeId == commandeId).LoadAsync(cancellationToken);
 
-            return context.Remboursements.Local.Any(r => r.CommandeId == commandeId && RemboursementsNonTermines.Contains(r.Statut))
-                || context.Avoirs.Local.Any(a => a.CommandeId == commandeId && AvoirsNonTermines.Contains(a.Statut));
+            return context.Remboursements.Local.Any(r => r.CommandeId == commandeId && r.TicketSAVId == null && RemboursementsNonTermines.Contains(r.Statut))
+                || context.Avoirs.Local.Any(a => a.CommandeId == commandeId && a.TicketSAVId == null && AvoirsNonTermines.Contains(a.Statut));
+        }
+
+        /// <summary>Même règle, pour l'argent décidé dans le cadre d'un ticket SAV.</summary>
+        public static async Task<bool> EnCoursPourTicketAsync(IApplicationDbContext context, Guid ticketId, CancellationToken cancellationToken)
+        {
+            await context.Remboursements.Where(r => r.TicketSAVId == ticketId).LoadAsync(cancellationToken);
+            await context.Avoirs.Where(a => a.TicketSAVId == ticketId).LoadAsync(cancellationToken);
+
+            return context.Remboursements.Local.Any(r => r.TicketSAVId == ticketId && RemboursementsNonTermines.Contains(r.Statut))
+                || context.Avoirs.Local.Any(a => a.TicketSAVId == ticketId && AvoirsNonTermines.Contains(a.Statut));
         }
 
         /// <summary>

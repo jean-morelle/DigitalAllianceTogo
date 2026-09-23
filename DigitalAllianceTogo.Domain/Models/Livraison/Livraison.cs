@@ -18,6 +18,10 @@ namespace DigitalAllianceTogo.Domain.Models.Livraison
         // Raison d'un échec ou d'une reprogrammation
         public string? MotifEchec { get; set; }
 
+        // Livraison de remplacement SAV : liée au ticket (la commande n'est pas rouverte)
+        public Guid? TicketSAVId { get; set; }
+        public Models.SAV.TicketSAV? TicketSAV { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

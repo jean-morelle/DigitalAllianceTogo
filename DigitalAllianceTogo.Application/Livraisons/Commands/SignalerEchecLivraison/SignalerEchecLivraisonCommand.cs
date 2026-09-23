@@ -62,7 +62,14 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.SignalerEchecLivra
             var avant = LivraisonHelper.Instantane(livraison);
             livraison.MotifEchec = request.Motif.Trim();
 
-            if (request.RefusClient)
+            if (livraison.TicketSAVId is not null)
+            {
+                // Remplacement SAV : le produit neuf revient au dépôt, toujours réservé pour le ticket.
+                // Le Commercial replanifie ou change la décision (ce qui libère la réservation).
+                await StockCommande.RetournerPourRelivraisonAsync(_context, livraison, cancellationToken);
+                livraison.Statut = request.RefusClient ? StatutLivraison.Echouee : StatutLivraison.AReprogrammer;
+            }
+            else if (request.RefusClient)
             {
                 livraison.Statut = StatutLivraison.Echouee;
                 commande.Statut = StatutCommande.LivraisonEchoueeRefusClient;

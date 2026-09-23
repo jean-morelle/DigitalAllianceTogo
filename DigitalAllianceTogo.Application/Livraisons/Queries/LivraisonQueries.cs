@@ -21,6 +21,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Queries
         public string? Reserve { get; set; }
         public Guid CommandeId { get; set; }
         public string CommandeReference { get; set; } = string.Empty;
+        public Guid? TicketSAVId { get; set; }
         public Guid? LivreurId { get; set; }
         public string? LivreurNom { get; set; }
 
@@ -108,6 +109,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Queries
                 Reserve = l.Reserve,
                 CommandeId = l.CommandeId,
                 CommandeReference = l.Commande.Reference,
+                TicketSAVId = l.TicketSAVId,
                 LivreurId = l.LivreurId,
                 LivreurNom = l.Livreur == null ? null : l.Livreur.Prenom + " " + l.Livreur.Nom,
                 AdresseLigne1 = l.Commande.AdresseLivraison.Ligne1,

@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Livraisons.Common;
+using DigitalAllianceTogo.Application.Sav.Common;
 using DigitalAllianceTogo.Application.Stock.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using DigitalAllianceTogo.Domain.Models.Livraison;
@@ -93,7 +94,10 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.ConfirmerLivraison
                 LivraisonId = livraison.Id
             });
 
-            commande.Statut = StatutCommande.Livree;
+            if (livraison.TicketSAV is { } ticket)
+                SavHelper.Cloturer(_audit, ticket, reserve is null ? "Produit remplacé" : "Produit remplacé, livré avec réserve");
+            else
+                commande.Statut = StatutCommande.Livree;
 
             _audit.Enregistrer("ConfirmationLivraison", "Livraison", livraison.Id, avant, LivraisonHelper.Instantane(livraison));
             await _context.SaveChangesAsync(cancellationToken);

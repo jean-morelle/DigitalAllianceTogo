@@ -20,6 +20,10 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         // Raison du dernier échec d'exécution (numéro invalide, compte fermé...)
         public string? MotifEchec { get; set; }
 
+        // Remboursement décidé dans le cadre d'un SAV
+        public Guid? TicketSAVId { get; set; }
+        public Models.SAV.TicketSAV? TicketSAV { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

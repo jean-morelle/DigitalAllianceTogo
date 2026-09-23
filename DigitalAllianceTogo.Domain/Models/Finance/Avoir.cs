@@ -14,6 +14,10 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         // Pourquoi l'avoir est émis (annulation, refus de livraison...) ou annulé
         public string Motif { get; set; } = string.Empty;
 
+        // Avoir décidé dans le cadre d'un SAV
+        public Guid? TicketSAVId { get; set; }
+        public Models.SAV.TicketSAV? TicketSAV { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

@@ -20,6 +20,36 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.SAV
                 .HasMaxLength(50)
                 .IsRequired();
 
+            builder.Property(t => t.Decision)
+                .HasConversion<string>()
+                .HasMaxLength(30);
+            builder.Property(t => t.Resolution).HasMaxLength(1000);
+            builder.Property(t => t.Version).IsRowVersion();
+
+            // Technicien : on garde le ticket même si le compte est supprimé
+            builder.HasOne(t => t.Technicien)
+                .WithMany()
+                .HasForeignKey(t => t.TechnicienId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Ce que le SAV a déclenché : historique conservé (Restrict)
+            builder.HasMany<Domain.Models.Stock.MouvementStock>()
+                .WithOne(m => m.TicketSAV)
+                .HasForeignKey(m => m.TicketSAVId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany<Domain.Models.Livraison.Livraison>()
+                .WithOne(l => l.TicketSAV)
+                .HasForeignKey(l => l.TicketSAVId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany<Domain.Models.Finance.Remboursement>()
+                .WithOne(r => r.TicketSAV)
+                .HasForeignKey(r => r.TicketSAVId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany<Domain.Models.Finance.Avoir>()
+                .WithOne(a => a.TicketSAV)
+                .HasForeignKey(a => a.TicketSAVId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // TicketSAV (1) -- (0..*) Diagnostic / Intervention
             builder.HasMany(t => t.Diagnostics)
                 .WithOne(d => d.TicketSAV)

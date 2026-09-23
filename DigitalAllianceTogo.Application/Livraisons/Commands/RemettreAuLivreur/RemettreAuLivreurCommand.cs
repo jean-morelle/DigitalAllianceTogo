@@ -34,7 +34,13 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.RemettreAuLivreur
             if (livraison.Statut != StatutLivraison.Planifiee)
                 throw new ConflictException($"La livraison est au statut {livraison.Statut} : le colis a déjà été remis ou la livraison est terminée.");
 
-            if (commande.Statut != StatutCommande.PretePourLivraison)
+            if (livraison.TicketSAV is { } ticket)
+            {
+                // Remplacement SAV : la commande (livrée / clôturée) n'est pas concernée
+                if (ticket.Statut != StatutSav.RemplacementEnCours)
+                    throw new ConflictException($"Le ticket SAV est au statut {ticket.Statut} : le remplacement n'est plus attendu.");
+            }
+            else if (commande.Statut != StatutCommande.PretePourLivraison)
                 throw new ConflictException($"La commande est au statut {commande.Statut} : elle n'est pas prête pour la livraison.");
 
             if (livraison.LivreurId is null)
@@ -46,7 +52,8 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.RemettreAuLivreur
 
             livraison.Statut = StatutLivraison.EnTransit;
             livraison.DatePriseEnCharge = DateTime.UtcNow;
-            commande.Statut = StatutCommande.EnTransit;
+            if (livraison.TicketSAVId is null)
+                commande.Statut = StatutCommande.EnTransit;
 
             _audit.Enregistrer("RemiseAuLivreur", "Livraison", livraison.Id, avant, new
             {
@@ -55,7 +62,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Commands.RemettreAuLivreur
                 Sorties = sorties
             });
 
-            // xmin de la commande : un double clic ne sort pas le stock deux fois
+            // xmin de la commande et des stocks : un double clic ne sort pas le stock deux fois
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

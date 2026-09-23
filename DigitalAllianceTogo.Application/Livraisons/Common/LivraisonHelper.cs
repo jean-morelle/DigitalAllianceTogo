@@ -23,6 +23,7 @@ namespace DigitalAllianceTogo.Application.Livraisons.Common
         {
             var livraison = await context.Livraisons
                 .Include(l => l.Commande)
+                .Include(l => l.TicketSAV)
                 .FirstOrDefaultAsync(l => l.Id == livraisonId, cancellationToken)
                 ?? throw new NotFoundException("Livraison", livraisonId);
 

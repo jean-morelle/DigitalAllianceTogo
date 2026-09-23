@@ -13,6 +13,10 @@ namespace DigitalAllianceTogo.Domain.Models.Stock
 
         // Commande à l'origine du mouvement (réservation, libération, sortie...) :
         // permet de retrouver exactement le stock réservé pour une commande.
+        // Ticket SAV à l'origine du mouvement (remplacement, retour de l'ancien produit)
+        public Guid? TicketSAVId { get; set; }
+        public Models.SAV.TicketSAV? TicketSAV { get; set; }
+
         public Guid? CommandeId { get; set; }
         public Models.Commande.Commande? Commande { get; set; }
 

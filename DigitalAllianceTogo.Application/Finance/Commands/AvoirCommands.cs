@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Finance.Common;
+using DigitalAllianceTogo.Application.Sav.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using DigitalAllianceTogo.Domain.Models.Finance;
 using FluentValidation;
@@ -55,6 +56,8 @@ namespace DigitalAllianceTogo.Application.Finance.Commands
                 new { Statut = StatutAvoir.Valide.ToString() }, new { Statut = avoir.Statut.ToString() });
 
             await RegularisationFinanciere.CloturerSiRegulariseeAsync(_context, _audit, avoir.Commande, cancellationToken);
+            if (avoir.TicketSAVId is Guid ticketId)
+                await SavHelper.CloturerSiRegulariseAsync(_context, _audit, ticketId, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
@@ -70,6 +73,8 @@ namespace DigitalAllianceTogo.Application.Finance.Commands
             _audit.Enregistrer("AnnulationAvoir", "Avoir", avoir.Id, avant, new { Statut = avoir.Statut.ToString(), avoir.Motif });
 
             await RegularisationFinanciere.CloturerSiRegulariseeAsync(_context, _audit, avoir.Commande, cancellationToken);
+            if (avoir.TicketSAVId is Guid ticketId)
+                await SavHelper.CloturerSiRegulariseAsync(_context, _audit, ticketId, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
