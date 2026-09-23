@@ -47,6 +47,9 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // Journal d'audit (écrit dans la même transaction que l'opération métier)
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+// Annulation automatique des commandes impayées (toutes les heures)
+builder.Services.AddHostedService<ExpirationCommandesService>();
+
 // Register PasswordHasher
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 

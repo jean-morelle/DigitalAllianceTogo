@@ -15,6 +15,9 @@
 
         public int SeuilAlerte { get; set; }
 
+        // Jeton de concurrence optimiste (colonne système xmin de PostgreSQL)
+        public uint Version { get; set; }
+
         // Propriété calculée : jamais stockée en base (voir config EF : Ignore)
         public int QuantiteDisponible => QuantitePhysique - QuantiteReservee;
 

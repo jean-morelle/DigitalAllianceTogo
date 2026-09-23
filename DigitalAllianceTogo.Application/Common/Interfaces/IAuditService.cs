@@ -14,5 +14,8 @@ namespace DigitalAllianceTogo.Application.Common.Interfaces
         /// Par défaut : l'utilisateur authentifié.
         /// </param>
         void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null, Guid? auteurId = null);
+
+        /// <summary>Action automatique du système (tâche planifiée), sans utilisateur.</summary>
+        void EnregistrerSysteme(string action, string entite, Guid entiteId, object? avant = null, object? apres = null);
     }
 }

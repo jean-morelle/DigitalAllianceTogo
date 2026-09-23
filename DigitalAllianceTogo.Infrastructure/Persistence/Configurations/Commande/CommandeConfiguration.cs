@@ -14,6 +14,8 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Commande
             builder.Property(c => c.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(c => c.Reference).IsUnique();
 
+            builder.Property(c => c.Version).IsRowVersion();
+
             builder.Property(c => c.Statut)
                 .HasConversion<string>()
                 .HasMaxLength(50)

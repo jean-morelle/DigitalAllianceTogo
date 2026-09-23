@@ -19,6 +19,12 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Stock
 
             builder.Property(m => m.Motif).HasMaxLength(500);
             builder.Property(m => m.Reference).HasMaxLength(100);
+
+            // Historique de stock conservé même si la commande disparaît un jour
+            builder.HasOne(m => m.Commande)
+                .WithMany()
+                .HasForeignKey(m => m.CommandeId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

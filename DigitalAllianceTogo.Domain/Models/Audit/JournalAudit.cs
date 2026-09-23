@@ -11,8 +11,9 @@
         public string? NouvelleValeur { get; set; }
         public string? AdresseIP { get; set; }
 
-        public Guid UtilisateurId { get; set; }
-        public Models.Security.Utilisateur Utilisateur { get; set; } = null!;
+        // Null = action du SYSTÈME (ex : expiration automatique d'une commande impayée)
+        public Guid? UtilisateurId { get; set; }
+        public Models.Security.Utilisateur? Utilisateur { get; set; }
 
     }
 }

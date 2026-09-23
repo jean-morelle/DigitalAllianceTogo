@@ -21,6 +21,10 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Stock
             // ne doit JAMAIS être mappée en colonne, sinon EF essaiera de l'écrire.
             builder.Ignore(s => s.QuantiteDisponible);
 
+            // Concurrence optimiste (xmin) : deux paiements confirmés en même temps
+            // ne peuvent pas réserver les mêmes unités (pas de survente).
+            builder.Property(s => s.Version).IsRowVersion();
+
             // Un même produit ne doit avoir qu'UNE seule ligne de stock par entrepôt
             builder.HasIndex(s => new { s.EntrepotId, s.ProduitId }).IsUnique();
 

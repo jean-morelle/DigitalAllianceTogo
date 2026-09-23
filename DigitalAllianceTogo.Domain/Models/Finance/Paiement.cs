@@ -21,6 +21,9 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         public Models.Security.Utilisateur? ConfirmePar { get; set; }
         public DateTime? DateConfirmation { get; set; }
 
+        // Pourquoi la preuve a été rejetée (référence introuvable, montant différent...)
+        public string? MotifRejet { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

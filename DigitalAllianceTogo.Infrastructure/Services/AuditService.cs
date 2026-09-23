@@ -21,6 +21,16 @@ namespace DigitalAllianceTogo.Infrastructure.Services
             var utilisateurId = auteurId ?? _currentUserService.UtilisateurId
                 ?? throw new InvalidOperationException("Impossible de journaliser une opération sans utilisateur authentifié.");
 
+            Ajouter(action, entite, entiteId, avant, apres, utilisateurId);
+        }
+
+        public void EnregistrerSysteme(string action, string entite, Guid entiteId, object? avant = null, object? apres = null)
+        {
+            Ajouter(action, entite, entiteId, avant, apres, utilisateurId: null);
+        }
+
+        private void Ajouter(string action, string entite, Guid entiteId, object? avant, object? apres, Guid? utilisateurId)
+        {
             _context.JournauxAudit.Add(new JournalAudit
             {
                 Id = Guid.NewGuid(),
@@ -30,7 +40,7 @@ namespace DigitalAllianceTogo.Infrastructure.Services
                 EntiteId = entiteId,
                 AncienneValeur = avant is null ? null : JsonSerializer.Serialize(avant),
                 NouvelleValeur = apres is null ? null : JsonSerializer.Serialize(apres),
-                AdresseIP = _currentUserService.AdresseIP,
+                AdresseIP = utilisateurId is null ? null : _currentUserService.AdresseIP,
                 UtilisateurId = utilisateurId
             });
         }

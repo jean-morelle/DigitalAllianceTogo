@@ -12,6 +12,10 @@ namespace DigitalAllianceTogo.Domain.Models.Commande
         // Numéro de la VersionCommande actuellement active (pointeur logique)
         public int VersionActive { get; set; } = 1;
 
+        // Jeton de concurrence optimiste (xmin) : deux paiements confirmés en même temps
+        // ne peuvent pas faire avancer la commande deux fois.
+        public uint Version { get; set; }
+
         public Guid ClientId { get; set; }
         public Models.Security.Client Client { get; set; } = null!;
 

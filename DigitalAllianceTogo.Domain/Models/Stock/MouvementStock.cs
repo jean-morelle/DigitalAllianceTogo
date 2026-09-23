@@ -11,6 +11,11 @@ namespace DigitalAllianceTogo.Domain.Models.Stock
         public string Motif { get; set; } = string.Empty;
         public string Reference { get; set; } = string.Empty;
 
+        // Commande à l'origine du mouvement (réservation, libération, sortie...) :
+        // permet de retrouver exactement le stock réservé pour une commande.
+        public Guid? CommandeId { get; set; }
+        public Models.Commande.Commande? Commande { get; set; }
+
         public Guid StockProduitId { get; set; }
         public StockProduit StockProduit { get; set; } = null!;
     }

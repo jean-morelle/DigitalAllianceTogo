@@ -26,6 +26,10 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Finance
                 .IsRequired();
 
             builder.Property(p => p.ReferenceExterne).HasMaxLength(100);
+            builder.Property(p => p.MotifRejet).HasMaxLength(500);
+
+            // Recherche des doublons : une même transaction Mobile Money ne doit servir qu'une fois
+            builder.HasIndex(p => p.ReferenceExterne);
             builder.Property(p => p.PreuveUrl).HasMaxLength(500);
 
             // Utilisateur ayant confirmé le paiement : on garde la trace même si le compte est supprimé
