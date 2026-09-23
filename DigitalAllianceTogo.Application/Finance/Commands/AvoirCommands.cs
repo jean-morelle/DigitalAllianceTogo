@@ -64,6 +64,8 @@ namespace DigitalAllianceTogo.Application.Finance.Commands
         public async Task Handle(AnnulerAvoirCommand request, CancellationToken cancellationToken)
         {
             var avoir = await ChargerAsync(request.Id, cancellationToken);
+            if (avoir.MontantUtilise > 0)
+                throw new ConflictException("Cet avoir a déjà servi à payer : il ne peut plus être annulé.");
             if (avoir.Statut is StatutAvoir.Utilise or StatutAvoir.Annule)
                 throw new ConflictException($"Cet avoir est au statut {avoir.Statut} : il ne peut plus être annulé.");
 

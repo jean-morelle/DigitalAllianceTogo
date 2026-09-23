@@ -16,6 +16,16 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Finance
 
             builder.Property(a => a.Motif).IsRequired().HasMaxLength(500);
 
+            // Calculé : jamais stocké
+            builder.Ignore(a => a.MontantRestant);
+            builder.Property(a => a.Version).IsRowVersion();
+
+            // Paiements réglés avec cet avoir : l'historique est conservé
+            builder.HasMany<Paiement>()
+                .WithOne(p => p.Avoir)
+                .HasForeignKey(p => p.AvoirId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Property(a => a.Statut)
                 .HasConversion<string>()
                 .HasMaxLength(30)

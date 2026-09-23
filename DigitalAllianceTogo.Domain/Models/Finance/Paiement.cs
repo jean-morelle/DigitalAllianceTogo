@@ -24,6 +24,10 @@ namespace DigitalAllianceTogo.Domain.Models.Finance
         // Pourquoi la preuve a été rejetée (référence introuvable, montant différent...)
         public string? MotifRejet { get; set; }
 
+        // Paiement par avoir : l'avoir utilisé (traçabilité de l'argent réemployé)
+        public Guid? AvoirId { get; set; }
+        public Avoir? Avoir { get; set; }
+
         public Guid CommandeId { get; set; }
         public Models.Commande.Commande Commande { get; set; } = null!;
 

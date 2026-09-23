@@ -7,6 +7,7 @@ using DigitalAllianceTogo.Application.Commandes.Queries.GetCommandeById;
 using DigitalAllianceTogo.Application.Commandes.Queries.GetCommandes;
 using DigitalAllianceTogo.Application.Common.Models;
 using DigitalAllianceTogo.Application.Common.Security;
+using DigitalAllianceTogo.Application.Paiements.Commands.PayerAvecAvoir;
 using DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -68,6 +69,19 @@ namespace DigitalAllianceTogo.Api.Controllers
         {
             var paiementId = await _sender.Send(command with { CommandeId = id }, cancellationToken);
             return CreatedAtAction(nameof(GetCommandeById), new { id }, paiementId);
+        }
+
+        /// <summary>
+        /// Règle tout ou partie du reste à payer avec un avoir disponible du client.
+        /// Couvre tout : paiement confirmé et stock réservé ; sinon le reste se paie normalement.
+        /// </summary>
+        [HttpPost("{id:guid}/payer-avec-avoir")]
+        [Authorize(Roles = PersonnelOuClient)]
+        [ProducesResponseType(typeof(PayerAvecAvoirResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<PayerAvecAvoirResult>> PayerAvecAvoir(Guid id, PayerAvecAvoirCommand command, CancellationToken cancellationToken)
+        {
+            return Ok(await _sender.Send(command with { CommandeId = id }, cancellationToken));
         }
 
         /// <summary>StockReserve → PreparationEnCours.</summary>

@@ -269,7 +269,7 @@ namespace DigitalAllianceTogo.Application.TableauDeBord.Queries
                 await _context.Remboursements
                     .Where(r => r.Statut == StatutRemboursement.EnAttente || r.Statut == StatutRemboursement.Valide || r.Statut == StatutRemboursement.Echoue)
                     .SumAsync(r => r.Montant, ct),
-                await _context.Avoirs.Where(a => a.Statut == StatutAvoir.Disponible).SumAsync(a => a.Montant, ct));
+                await _context.Avoirs.Where(a => a.Statut == StatutAvoir.Disponible).SumAsync(a => a.Montant - a.MontantUtilise, ct));
         }
 
         private static decimal Pourcent(int partie, int total) => total == 0 ? 0 : Math.Round(partie * 100m / total, 1);

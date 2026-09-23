@@ -61,11 +61,13 @@ namespace DigitalAllianceTogo.Application.Commandes.Commands.AnnulerCommande
             var avant = commande.Statut;
             decimal montant = 0;
             string message;
+            // Attend un paiement mais a déjà reçu de l'argent (avoir, avant un complément après modification)
+            var dejaPaye = await SoldeCommande.ADejaPayeAsync(_context, commande.Id, cancellationToken);
 
             switch (commande.Statut)
             {
-                case StatutCommande.CommandeCreee:
-                case StatutCommande.PaiementEchoue:
+                case StatutCommande.CommandeCreee when !dejaPaye:
+                case StatutCommande.PaiementEchoue when !dejaPaye:
                     commande.Statut = StatutCommande.Annulee;
                     _audit.Enregistrer("Annulation", "Commande", commande.Id,
                         new { Statut = avant.ToString() }, new { Statut = commande.Statut.ToString(), Motif = motif });
@@ -76,6 +78,8 @@ namespace DigitalAllianceTogo.Application.Commandes.Commands.AnnulerCommande
                 case StatutCommande.PaiementEnAttente:
                     throw new ConflictException("Le paiement est en cours de vérification : attendez sa confirmation ou son rejet avant d'annuler.");
 
+                case StatutCommande.CommandeCreee:
+                case StatutCommande.PaiementEchoue:
                 case StatutCommande.PaiementConfirme:
                 case StatutCommande.EnAttenteDisponibilite:
                 case StatutCommande.StockReserve:

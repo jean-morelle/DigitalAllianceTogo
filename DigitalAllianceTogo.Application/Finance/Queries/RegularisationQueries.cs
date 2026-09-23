@@ -29,6 +29,8 @@ namespace DigitalAllianceTogo.Application.Finance.Queries
         public Guid Id { get; set; }
         public string Reference { get; set; } = string.Empty;
         public decimal Montant { get; set; }
+        public decimal MontantUtilise { get; set; }
+        public decimal MontantRestant { get; set; }
         public string Statut { get; set; } = string.Empty;
         public string Motif { get; set; } = string.Empty;
         public DateTime DateCreation { get; set; }
@@ -133,6 +135,8 @@ namespace DigitalAllianceTogo.Application.Finance.Queries
                 Id = a.Id,
                 Reference = a.Reference,
                 Montant = a.Montant,
+                MontantUtilise = a.MontantUtilise,
+                MontantRestant = a.Montant - a.MontantUtilise,
                 Statut = a.Statut.ToString(),
                 Motif = a.Motif,
                 DateCreation = a.DateCreation,

@@ -36,7 +36,10 @@ namespace DigitalAllianceTogo.Application.Commandes.Commands.ExpirerCommandesImp
             var candidates = await _context.Commandes
                 .Include(c => c.Paiements)
                 .Where(c => (c.Statut == StatutCommande.CommandeCreee || c.Statut == StatutCommande.PaiementEchoue)
-                            && c.DateCreation <= limite)
+                            && c.DateCreation <= limite
+                            // Déjà en partie payée (avoir, complément après modification) : jamais annulée
+                            // automatiquement, l'argent du client devrait être régularisé
+                            && !c.Paiements.Any(p => p.Statut == StatutPaiement.Confirme))
                 .ToListAsync(cancellationToken);
 
             var annulees = 0;

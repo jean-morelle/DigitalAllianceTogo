@@ -1,6 +1,7 @@
 using DigitalAllianceTogo.Application.Commandes.Common;
 using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Finance.Common;
 using DigitalAllianceTogo.Domain.Enum;
 using DigitalAllianceTogo.Domain.Models.Finance;
 using MediatR;
@@ -11,7 +12,7 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
     /// <summary>
     /// Paiement EXTERNE (§9) : le client a payé par Mobile Money / virement et fournit
     /// sa preuve. Le paiement reste EnAttente jusqu'à la vérification par le Commercial.
-    /// Le montant est TOUJOURS celui de la version active : pas de paiement partiel.
+    /// Le montant est TOUJOURS le reste à payer de la version active : pas de paiement partiel.
     /// </summary>
     public record SoumettrePaiementCommand : IRequest<Guid>
     {
@@ -42,7 +43,9 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
             var commande = await CommandeHelper.ChargerAvecControleAccesAsync(_context, _currentUser, request.CommandeId, cancellationToken);
 
             var parametres = await _context.ParametresEntreprise.AsNoTracking().FirstAsync(cancellationToken);
-            if (CommandeHelper.AnnulerSiDelaiDepasse(commande, parametres.DelaiExpirationPaiementHeures, DateTime.UtcNow))
+            // Une commande déjà en partie payée (avoir, complément après modification) n'expire jamais
+            if (!await SoldeCommande.ADejaPayeAsync(_context, commande.Id, cancellationToken)
+                && CommandeHelper.AnnulerSiDelaiDepasse(commande, parametres.DelaiExpirationPaiementHeures, DateTime.UtcNow))
             {
                 _audit.Enregistrer("ExpirationCommande", "Commande", commande.Id, apres: new { Statut = commande.Statut.ToString() });
                 await _context.SaveChangesAsync(cancellationToken);
@@ -57,6 +60,11 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
             if (await _context.Paiements.AnyAsync(p => p.ReferenceExterne == referenceExterne && p.Statut != StatutPaiement.Echoue, cancellationToken))
                 throw new ConflictException("Cette référence de transaction a déjà été utilisée.");
 
+            // Montant = reste à payer (total de la version active − déjà payé net) : jamais de paiement partiel
+            var reste = await SoldeCommande.ResteAPayerAsync(_context, commande, cancellationToken);
+            if (reste <= 0)
+                throw new ConflictException("Il ne reste rien à payer sur cette commande.");
+
             var version = await _context.VersionsCommande.AsNoTracking()
                 .FirstAsync(v => v.CommandeId == commande.Id && v.NumeroVersion == commande.VersionActive, cancellationToken);
 
@@ -64,7 +72,7 @@ namespace DigitalAllianceTogo.Application.Paiements.Commands.SoumettrePaiement
             {
                 Id = Guid.NewGuid(),
                 Reference = DigitalAllianceTogo.Application.Common.References.Generer("PAY"),
-                Montant = version.Total,
+                Montant = reste,
                 DatePaiement = DateTime.UtcNow,
                 Statut = StatutPaiement.EnAttente,
                 Mode = ModePaiement.Externe,

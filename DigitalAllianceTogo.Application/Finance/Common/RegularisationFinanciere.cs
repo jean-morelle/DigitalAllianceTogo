@@ -29,9 +29,8 @@ namespace DigitalAllianceTogo.Application.Finance.Common
             string motif,
             CancellationToken cancellationToken)
         {
-            var montant = await context.Paiements
-                .Where(p => p.CommandeId == commande.Id && p.Statut == StatutPaiement.Confirme)
-                .SumAsync(p => p.Montant, cancellationToken);
+            // Ce que le client a versé et qui ne lui a pas déjà été rendu (ex : baisse de prix §21)
+            var montant = await SoldeCommande.PayeNetAsync(context, commande.Id, cancellationToken);
             if (montant <= 0)
                 return 0;
 
