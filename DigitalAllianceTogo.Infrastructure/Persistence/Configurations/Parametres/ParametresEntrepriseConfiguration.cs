@@ -16,6 +16,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Parametr
 
             builder.Property(p => p.SeuilRemiseCommercialPourcent).HasPrecision(5, 2);
             builder.Property(p => p.SeuilAugmentationModificationPourcent).HasPrecision(5, 2);
+            builder.Property(p => p.NumeroTMoney).HasMaxLength(20);
+            builder.Property(p => p.NumeroFlooz).HasMaxLength(20);
+            builder.Property(p => p.NomBeneficiairePaiement).HasMaxLength(100);
 
             // Valeurs par défaut du cahier des charges (remise commerciale max 10 %)
             builder.HasData(new ParametresEntreprise

@@ -441,3 +441,21 @@ export interface SuiviLivraison {
     dateLivraison: string | null;
     motifEchec: string | null;
 }
+
+export interface Parametres {
+    seuilRemiseCommercialPourcent: number;
+    seuilAugmentationModificationPourcent: number;
+    delaiExpirationPaiementHeures: number;
+    dureeValiditeDevisJours: number;
+    numeroTMoney: string | null;
+    numeroFlooz: string | null;
+    nomBeneficiairePaiement: string | null;
+    dateModification: string;
+}
+
+export interface InfosPaiement {
+    numeroTMoney: string | null;
+    numeroFlooz: string | null;
+    nomBeneficiaire: string | null;
+    delaiPaiementHeures: number;
+}

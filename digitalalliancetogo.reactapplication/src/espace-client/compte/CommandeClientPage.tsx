@@ -14,7 +14,7 @@ import { DialogueAction } from '@/components/DialogueAction';
 import { EnvoiFichier } from '@/components/Fichiers';
 import { api } from '@/lib/api';
 import { formatDate, formatFcfa, libelle } from '@/lib/format';
-import type { Avoir, CommandeDetail, PaginatedList, VersionCommande } from '@/lib/types';
+import type { Avoir, CommandeDetail, InfosPaiement, PaginatedList, VersionCommande } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { DialogueNouveauTicket } from '@/pages/sav/DialogueNouveauTicket';
 import { STATUT_CLIENT } from '../client';
@@ -75,6 +75,8 @@ function Paiement({ commande, surPaye }: { commande: CommandeDetail; surPaye: ()
         queryKey: ['mes-avoirs', 'disponibles'],
         queryFn: () => api.get<PaginatedList<Avoir>>('/avoirs', { statut: 'Disponible', pageSize: 50 }),
     });
+    const { data: infos } = useQuery({ queryKey: ['infos-paiement'], queryFn: () => api.get<InfosPaiement>('/parametres/paiement'), staleTime: 10 * 60_000 });
+    const numeros = [['T-Money', infos?.numeroTMoney], ['Flooz', infos?.numeroFlooz]].filter((n): n is [string, string] => !!n[1]);
 
     const payer = useMutation({
         mutationFn: () => api.post(`/commandes/${commande.id}/paiements`, { referenceExterne: reference.trim(), preuveUrl }),
@@ -97,7 +99,24 @@ function Paiement({ commande, surPaye }: { commande: CommandeDetail; surPaye: ()
                 )}
                 <div className="grid gap-2 text-sm">
                     <div className="flex items-center gap-2 font-medium"><Smartphone className="size-4" /> Mobile Money (T-Money, Flooz)</div>
-                    <p className="text-muted-foreground">Envoyez {formatFcfa(commande.resteAPayer)} au numéro de paiement de Togo Informatique, puis indiquez ci-dessous la référence reçue par SMS.</p>
+                    {numeros.length > 0 ? (
+                        <>
+                            <p className="text-muted-foreground">Envoyez <strong className="text-foreground">{formatFcfa(commande.resteAPayer)}</strong> à l'un de ces numéros :</p>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {numeros.map(([operateur, numero]) => (
+                                    <button key={operateur} type="button" title="Copier le numéro" className="hover:bg-muted rounded-md border p-3 text-left"
+                                        onClick={() => navigator.clipboard?.writeText(numero.replace(/s/g, '')).then(() => toast.success('Numéro copié.'), () => undefined)}>
+                                        <div className="text-muted-foreground text-xs">{operateur}</div>
+                                        <div className="font-semibold tabular-nums">{numero}</div>
+                                    </button>
+                                ))}
+                            </div>
+                            {infos?.nomBeneficiaire && <p className="text-muted-foreground">Vérifiez que le bénéficiaire affiché est <strong className="text-foreground">{infos.nomBeneficiaire}</strong>.</p>}
+                            <p className="text-muted-foreground">Indiquez ensuite ci-dessous la référence reçue par SMS.</p>
+                        </>
+                    ) : (
+                        <p className="text-muted-foreground">Envoyez {formatFcfa(commande.resteAPayer)} au numéro de paiement de Togo Informatique, puis indiquez ci-dessous la référence reçue par SMS.</p>
+                    )}
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="ref">Référence de la transaction *</Label>

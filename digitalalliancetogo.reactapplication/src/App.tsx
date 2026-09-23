@@ -22,6 +22,7 @@ const LivraisonsPage = lazy(() => import('@/pages/livraisons/LivraisonsPage').th
 const SavPage = lazy(() => import('@/pages/sav/SavPage').then(m => ({ default: m.SavPage })));
 const SavDetailPage = lazy(() => import('@/pages/sav/SavDetailPage').then(m => ({ default: m.SavDetailPage })));
 const FinancePage = lazy(() => import('@/pages/FinancePage').then(m => ({ default: m.FinancePage })));
+const ParametresPage = lazy(() => import('@/pages/ParametresPage').then(m => ({ default: m.ParametresPage })));
 const AuditPage = lazy(() => import('@/pages/AuditPage').then(m => ({ default: m.AuditPage })));
 const BoutiquePage = lazy(() => import('@/espace-client/BoutiquePage').then(m => ({ default: m.BoutiquePage })));
 const ProduitPage = lazy(() => import('@/espace-client/ProduitPage').then(m => ({ default: m.ProduitPage })));
@@ -82,6 +83,7 @@ export default function App() {
                     <Route path="sav/:id" element={<RequireRole roles={[Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock]}><SavDetailPage /></RequireRole>} />
                     <Route path="finance" element={<RequireRole roles={[Roles.Commercial]}><FinancePage /></RequireRole>} />
                     <Route path="audit" element={<RequireRole roles={[]}><AuditPage /></RequireRole>} />
+                    <Route path="parametres" element={<RequireRole roles={[]}><ParametresPage /></RequireRole>} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

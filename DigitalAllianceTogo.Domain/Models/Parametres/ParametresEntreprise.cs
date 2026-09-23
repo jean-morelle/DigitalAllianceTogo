@@ -21,6 +21,13 @@ namespace DigitalAllianceTogo.Domain.Models.Parametres
         // Durée de validité par défaut d'un devis envoyé
         public int DureeValiditeDevisJours { get; set; } = 15;
 
+        // Numéros Mobile Money sur lesquels les clients envoient leurs paiements (affichés au client)
+        public string? NumeroTMoney { get; set; }
+        public string? NumeroFlooz { get; set; }
+
+        // Nom affiché par l'opérateur au moment du transfert : le client vérifie qu'il paie le bon destinataire
+        public string? NomBeneficiairePaiement { get; set; }
+
         public DateTime DateModification { get; set; } = DateTime.UtcNow;
     }
 }

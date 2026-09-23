@@ -1,5 +1,5 @@
 import {
-    ClipboardList, CreditCard, FileText, History, LayoutDashboard, Package, Truck, Wallet, Wrench, type LucideIcon,
+    ClipboardList, CreditCard, FileText, History, LayoutDashboard, Package, Settings, Truck, Wallet, Wrench, type LucideIcon,
 } from 'lucide-react';
 import { Roles, type Role } from '@/lib/roles';
 
@@ -22,4 +22,5 @@ export const NAVIGATION: EntreeNavigation[] = [
     { chemin: '/sav', libelle: 'SAV', icone: Wrench, roles: [Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock] },
     { chemin: '/finance', libelle: 'Remboursements & avoirs', icone: Wallet, roles: [Roles.Commercial] },
     { chemin: '/audit', libelle: 'Journal d\'audit', icone: History, roles: [] },
+    { chemin: '/parametres', libelle: 'Paramètres', icone: Settings, roles: [] },
 ];
