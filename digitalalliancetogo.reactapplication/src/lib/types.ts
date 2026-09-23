@@ -1,0 +1,178 @@
+/** Types des réponses de l'API (miroir des DTO C#, en camelCase). */
+
+export interface PaginatedList<T> {
+    items: T[];
+    pageNumber: number;
+    totalPages: number;
+    totalCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
+// ---------- Tableau de bord ----------
+
+export interface FileDeTravail {
+    cle: string;
+    libelle: string;
+    responsable: string;
+    nombre: number;
+    plusAncien: string | null;
+}
+
+export interface Statistiques {
+    debut: string;
+    fin: string;
+    ventes: {
+        commandesCreees: number;
+        paiementsConfirmes: number;
+        encaisse: number;
+        rembourse: number;
+        encaisseNet: number;
+        panierMoyen: number;
+        commandesLivrees: number;
+        commandesAnnulees: number;
+    };
+    devis: {
+        crees: number;
+        acceptes: number;
+        refuses: number;
+        expires: number;
+        enCours: number;
+        tauxAcceptationPourcent: number;
+        remiseMoyennePourcent: number;
+        remisesSoumisesAdmin: number;
+    };
+    acquisitionParSource: { source: string; nouveauxClients: number; clientsAyantPaye: number; tauxConversionPourcent: number; encaisse: number }[];
+    topProduitsLivres: { produitId: string; reference: string; nom: string; quantite: number; montant: number }[];
+    livraisons: {
+        remises: number;
+        livrees: number;
+        livreesAvecReserve: number;
+        aReprogrammer: number;
+        refusClient: number;
+        tauxReussitePourcent: number;
+        delaiMoyenPaiementLivraisonHeures: number | null;
+    };
+    sav: { ouverts: number; clotures: number; repares: number; remplaces: number; rembourses: number; avoirs: number; delaiMoyenResolutionJours: number | null };
+    instantane: {
+        commandesEnAttenteStock: number;
+        produitsSousSeuil: number;
+        unitesDefectueuses: number;
+        unitesEnTransit: number;
+        ticketsSavEnCours: number;
+        remboursementsNonRegles: number;
+        avoirsDisponibles: number;
+    };
+}
+
+// ---------- Commandes / paiements ----------
+
+export interface Paiement {
+    id: string;
+    reference: string;
+    montant: number;
+    statut: string;
+    mode: string;
+    datePaiement: string;
+    referenceExterne: string | null;
+    preuveUrl: string | null;
+    dateConfirmation: string | null;
+    motifRejet: string | null;
+    numeroVersion: number;
+    commandeId: string;
+    commandeReference: string;
+}
+
+export interface Commande {
+    id: string;
+    reference: string;
+    statut: string;
+    dateCreation: string;
+    versionActive: number;
+    total: number;
+    clientId: string;
+    codeClient: string;
+}
+
+export interface LigneCommande {
+    id: string;
+    produitId: string;
+    produitReference: string;
+    produitNom: string;
+    quantite: number;
+    prixUnitaire: number;
+    remise: number;
+    total: number;
+}
+
+export interface VersionCommande {
+    id: string;
+    numeroVersion: number;
+    statut: string;
+    active: boolean;
+    dateCreation: string;
+    motifModification: string | null;
+    motifRefus: string | null;
+    dateReponse: string | null;
+    sousTotal: number;
+    remise: number;
+    total: number;
+    lignes: LigneCommande[];
+}
+
+export interface Remboursement {
+    id: string;
+    reference: string;
+    montant: number;
+    statut: string;
+    motif: string;
+    dateDemande: string;
+    dateExecution: string | null;
+    referenceTransaction: string | null;
+    motifEchec: string | null;
+    commandeId: string;
+    commandeReference: string;
+    numeroVersion: number;
+}
+
+export interface Avoir {
+    id: string;
+    reference: string;
+    montant: number;
+    montantUtilise: number;
+    montantRestant: number;
+    statut: string;
+    motif: string;
+    dateCreation: string;
+    dateUtilisation: string | null;
+    commandeId: string;
+    commandeReference: string;
+    numeroVersion: number;
+}
+
+export interface CommandeDetail extends Commande {
+    sousTotal: number;
+    remise: number;
+    devisOrigineId: string | null;
+    adresseLivraison: { ligne1: string; ligne2: string | null; ville: string; pays: string; codePostal: string; telephoneContact: string };
+    lignes: LigneCommande[];
+    paiements: Paiement[];
+    remboursements: Remboursement[];
+    avoirs: Avoir[];
+    resteAPayer: number;
+    versions: VersionCommande[];
+    dateLimitePaiement: string | null;
+}
+
+export interface JournalAudit {
+    id: string;
+    dateAction: string;
+    action: string;
+    entite: string;
+    entiteId: string;
+    utilisateurId: string | null;
+    auteur: string;
+    adresseIP: string | null;
+    avant: string | null;
+    apres: string | null;
+}
