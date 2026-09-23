@@ -1,4 +1,5 @@
 ﻿using DigitalAllianceTogo.Application.Common.Models;
+using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Utilisateurs.Commands.AssignerRole;
 using DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateur;
 using DigitalAllianceTogo.Application.Utilisateurs.Commands.DeleteUtilisateur;
@@ -13,9 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalAllianceTogo.Controllers
 {
+    /// <summary>
+    /// Gestion des comptes internes et des rôles : réservée à l'Administrateur (§4).
+    /// (Sans cette restriction, un client connecté pourrait s'attribuer le rôle Admin.)
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = Roles.Admin)]
     public class UtilisateursController : ControllerBase
     {
         private readonly ISender _sender;

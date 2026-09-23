@@ -8,6 +8,11 @@ namespace DigitalAllianceTogo.Application.Common.Interfaces
     /// </summary>
     public interface IAuditService
     {
-        void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null);
+        /// <param name="auteurId">
+        /// Auteur explicite, pour une action faite sans être connecté
+        /// (ex : inscription d'un client, l'auteur est le compte qui vient d'être créé).
+        /// Par défaut : l'utilisateur authentifié.
+        /// </param>
+        void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null, Guid? auteurId = null);
     }
 }

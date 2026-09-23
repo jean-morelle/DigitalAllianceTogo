@@ -14,6 +14,18 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Security
             builder.Property(c => c.CodeClient).IsRequired().HasMaxLength(50);
             builder.HasIndex(c => c.CodeClient).IsUnique();
 
+            builder.Property(c => c.Type).HasConversion<string>().HasMaxLength(30).IsRequired();
+            builder.Property(c => c.Source).HasConversion<string>().HasMaxLength(30).IsRequired();
+            builder.Property(c => c.Nom).IsRequired().HasMaxLength(100);
+            builder.Property(c => c.Prenom).HasMaxLength(100);
+            builder.Property(c => c.RaisonSociale).HasMaxLength(200);
+            builder.Property(c => c.Telephone).IsRequired().HasMaxLength(30);
+            builder.Property(c => c.Email).HasMaxLength(255);
+
+            // Recherche fréquente par téléphone (clients venant de WhatsApp) — non unique :
+            // une entreprise peut avoir plusieurs contacts sur le même standard.
+            builder.HasIndex(c => c.Telephone);
+
             // Client (0..1) -- (1) Utilisateur : relation un-à-un optionnelle
             builder.HasOne(c => c.Utilisateur)
                 .WithOne(u => u.Client)

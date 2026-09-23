@@ -15,10 +15,10 @@ namespace DigitalAllianceTogo.Infrastructure.Services
             _currentUserService = currentUserService;
         }
 
-        public void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null)
+        public void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null, Guid? auteurId = null)
         {
-            // Toute opération auditée doit être faite par un utilisateur identifié
-            var utilisateurId = _currentUserService.UtilisateurId
+            // Toute opération auditée doit être rattachée à un utilisateur identifié
+            var utilisateurId = auteurId ?? _currentUserService.UtilisateurId
                 ?? throw new InvalidOperationException("Impossible de journaliser une opération sans utilisateur authentifié.");
 
             _context.JournauxAudit.Add(new JournalAudit

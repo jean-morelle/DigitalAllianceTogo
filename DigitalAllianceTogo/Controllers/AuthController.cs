@@ -3,6 +3,8 @@ using DigitalAllianceTogo.Application.Auth.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using DigitalAllianceTogo.Common;
 
 namespace DigitalAllianceTogo.Api.Controllers
 {
@@ -21,8 +23,10 @@ namespace DigitalAllianceTogo.Api.Controllers
 
         /// <summary>Authentifie un utilisateur et renvoie un token JWT.</summary>
         [HttpPost("login")]
+        [EnableRateLimiting(RateLimiting.Anonyme)] // freine la force brute sur les mots de passe
         [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<LoginResultDto>> Login(LoginCommand command, CancellationToken cancellationToken)
         {
             var result = await _sender.Send(command, cancellationToken);

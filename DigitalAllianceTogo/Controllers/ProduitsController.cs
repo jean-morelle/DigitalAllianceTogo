@@ -1,4 +1,6 @@
+using DigitalAllianceTogo.Application.Categories.Commands.CreerCategorie;
 using DigitalAllianceTogo.Application.Categories.Queries.GetCategories;
+using DigitalAllianceTogo.Application.Marques.Commands.CreerMarque;
 using DigitalAllianceTogo.Application.Common.Models;
 using DigitalAllianceTogo.Application.Marques.Queries.GetMarques;
 using DigitalAllianceTogo.Application.Produits.Commands.AjouterAttribut;
@@ -158,6 +160,26 @@ namespace DigitalAllianceTogo.Api.Controllers
         public async Task<ActionResult<List<CategorieDto>>> GetCategories(CancellationToken cancellationToken)
         {
             return Ok(await _sender.Send(new GetCategoriesQuery(), cancellationToken));
+        }
+
+        /// <summary>Crée une catégorie.</summary>
+        [HttpPost("~/api/categories")]
+        [Authorize(Roles = "Admin,Catalogue")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<Guid>> CreerCategorie(CreerCategorieCommand command, CancellationToken cancellationToken)
+        {
+            return StatusCode(StatusCodes.Status201Created, await _sender.Send(command, cancellationToken));
+        }
+
+        /// <summary>Crée une marque.</summary>
+        [HttpPost("~/api/marques")]
+        [Authorize(Roles = "Admin,Catalogue")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<Guid>> CreerMarque(CreerMarqueCommand command, CancellationToken cancellationToken)
+        {
+            return StatusCode(StatusCodes.Status201Created, await _sender.Send(command, cancellationToken));
         }
 
         /// <summary>Liste des marques actives (pour peupler un formulaire produit).</summary>

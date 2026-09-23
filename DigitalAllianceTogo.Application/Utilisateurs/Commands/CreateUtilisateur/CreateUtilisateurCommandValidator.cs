@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DigitalAllianceTogo.Application.Common.Validation;
+using FluentValidation;
 
 namespace DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateur
 {
@@ -22,11 +23,7 @@ namespace DigitalAllianceTogo.Application.Utilisateurs.Commands.CreateUtilisateu
             RuleFor(x => x.Telephone)
                 .MaximumLength(30);
 
-            RuleFor(x => x.MotDePasse)
-                .NotEmpty().WithMessage("Le mot de passe est obligatoire.")
-                .MinimumLength(8).WithMessage("Le mot de passe doit contenir au moins 8 caractères.")
-                .Matches("[A-Z]").WithMessage("Le mot de passe doit contenir au moins une majuscule.")
-                .Matches("[0-9]").WithMessage("Le mot de passe doit contenir au moins un chiffre.");
+            RuleFor(x => x.MotDePasse).MotDePasseRobuste();
         }
     }
 }

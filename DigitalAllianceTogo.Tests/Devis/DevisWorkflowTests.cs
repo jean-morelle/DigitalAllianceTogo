@@ -58,7 +58,11 @@ namespace DigitalAllianceTogo.Tests.Devis
             {
                 Id = _clientUtilisateurId, Nom = "Koffi", Prenom = "Ama", Email = "ama@test.tg", Telephone = "+22890000000"
             });
-            _context.Clients.Add(new Client { Id = _clientId, CodeClient = "CLI-001", UtilisateurId = _clientUtilisateurId });
+            _context.Clients.Add(new Client
+            {
+                Id = _clientId, CodeClient = "CLI-001", UtilisateurId = _clientUtilisateurId,
+                Nom = "Koffi", Prenom = "Ama", Telephone = "+22890000000"
+            });
             _context.Adresses.Add(new Adresse
             {
                 Id = _adresseId, ClientId = _clientId, Libelle = "Maison", Ligne1 = "Rue 123", Ville = "Lomé", Pays = "Togo"

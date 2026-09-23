@@ -122,9 +122,5 @@ namespace DigitalAllianceTogo.Application.Devis.Common
             devis.ValideParId,
             devis.DateValidite
         };
-
-        /// <summary>Référence lisible et unique (index unique en base).</summary>
-        public static string GenererReference(string prefixe) =>
-            $"{prefixe}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
     }
 }

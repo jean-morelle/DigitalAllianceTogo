@@ -29,10 +29,13 @@ namespace DigitalAllianceTogo.Application.Auth.Commands.Login
 
         public async Task<LoginResultDto> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
+            // Email insensible à la casse (les emails sont enregistrés en minuscules)
+            var email = request.Email.Trim().ToLowerInvariant();
+
             var utilisateur = await _context.Utilisateurs
                 .Include(u => u.UtilisateurRoles)
                     .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email, cancellationToken);
 
             // Même exception que le mot de passe soit faux ou que l'email n'existe pas :
             // ne jamais révéler laquelle des deux informations était incorrecte.

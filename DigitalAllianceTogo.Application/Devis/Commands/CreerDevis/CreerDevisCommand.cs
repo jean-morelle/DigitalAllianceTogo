@@ -42,7 +42,7 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.CreerDevis
             var devis = new DevisEntity
             {
                 Id = Guid.NewGuid(),
-                Reference = DevisHelper.GenererReference("DEV"),
+                Reference = DigitalAllianceTogo.Application.Common.References.Generer("DEV"),
                 ClientId = request.ClientId,
                 Statut = StatutDevis.Brouillon,
                 DateCreation = DateTime.UtcNow,

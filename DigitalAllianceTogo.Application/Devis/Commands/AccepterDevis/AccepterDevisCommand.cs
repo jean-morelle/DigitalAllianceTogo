@@ -21,7 +21,7 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
         /// <summary>Une des adresses du client : elle est copiée (snapshot) dans la commande.</summary>
         public Guid AdresseLivraisonId { get; init; }
 
-        /// <summary>Optionnel : par défaut, le téléphone du compte client.</summary>
+        /// <summary>Optionnel : par défaut, le téléphone de la fiche client.</summary>
         public string? TelephoneContact { get; init; }
     }
 
@@ -61,7 +61,7 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
             {
                 telephone = await _context.Clients
                     .Where(c => c.Id == devis.ClientId)
-                    .Select(c => c.Utilisateur != null ? c.Utilisateur.Telephone : null)
+                    .Select(c => c.Telephone)
                     .FirstOrDefaultAsync(cancellationToken);
             }
             if (string.IsNullOrWhiteSpace(telephone))
@@ -73,7 +73,7 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
             var commande = new CommandeEntity
             {
                 Id = Guid.NewGuid(),
-                Reference = DevisHelper.GenererReference("CMD"),
+                Reference = DigitalAllianceTogo.Application.Common.References.Generer("CMD"),
                 Statut = StatutCommande.CommandeCreee,
                 DateCreation = DateTime.UtcNow,
                 ClientId = devis.ClientId,
