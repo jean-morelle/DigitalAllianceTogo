@@ -36,7 +36,7 @@ export function BoutiquePage() {
     const page = Number(params.get('page') ?? 1);
     const panier = useQuantitePanier();
 
-    const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: () => api.get<Categorie[]>('/categories') });
+    const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: () => api.get<Categorie[]>('/categories'), select: liste => liste.filter(c => c.actif !== false) });
     const { data, isPending, error } = useQuery({
         queryKey: ['catalogue', params.get('q'), categorieId, page],
         queryFn: () => api.get<PaginatedList<ProduitCatalogue>>('/produits', {

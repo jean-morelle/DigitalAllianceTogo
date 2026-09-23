@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DigitalAllianceTogo.Application.Marques.Queries.GetMarques
 {
 
-    public record MarqueDto(Guid Id, string Nom, bool Actif);
+    public record MarqueDto(Guid Id, string Nom, string Description, bool Actif);
     public record GetMarquesQuery : IRequest<List<MarqueDto>>;
     public class GetMarquesQueryHandler : IRequestHandler<GetMarquesQuery, List<MarqueDto>>
     {
@@ -21,7 +21,7 @@ namespace DigitalAllianceTogo.Application.Marques.Queries.GetMarques
             return await _context.Marques
                 .AsNoTracking()
                 .OrderBy(m => m.Nom)
-                .Select(m => new MarqueDto(m.Id, m.Nom, m.Actif))
+                .Select(m => new MarqueDto(m.Id, m.Nom, m.Description, m.Actif))
                 .ToListAsync(cancellationToken);
         }
     }

@@ -96,7 +96,7 @@ export interface FichierEnvoye {
 }
 
 /** Envoi multipart (le navigateur fixe lui-même le Content-Type et la frontière). */
-async function envoyerFichier(categorie: 'paiements' | 'livraisons', fichier: Blob, nom: string): Promise<FichierEnvoye> {
+async function envoyerFichier(categorie: 'paiements' | 'livraisons' | 'produits', fichier: Blob, nom: string): Promise<FichierEnvoye> {
     const donnees = new FormData();
     donnees.append('fichier', fichier, nom);
     const token = jeton();

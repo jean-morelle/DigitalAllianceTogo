@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigitalAllianceTogo.Application.Categories.Queries.GetCategories
 {
-    public record CategorieDto(Guid Id, string Nom, bool Actif);
+    public record CategorieDto(Guid Id, string Nom, string Description, bool Actif);
 
     /// <summary>Liste complète, non paginée : sert à peupler des listes déroulantes
     /// (création/édition de produit), pas à afficher un catalogue de catégories.</summary>
@@ -23,7 +23,7 @@ namespace DigitalAllianceTogo.Application.Categories.Queries.GetCategories
             return await _context.Categories
                 .AsNoTracking()
                 .OrderBy(c => c.Nom)
-                .Select(c => new CategorieDto(c.Id, c.Nom, c.Actif))
+                .Select(c => new CategorieDto(c.Id, c.Nom, c.Description, c.Actif))
                 .ToListAsync(cancellationToken);
         }
     }

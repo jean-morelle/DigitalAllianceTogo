@@ -22,6 +22,8 @@ const LivraisonsPage = lazy(() => import('@/pages/livraisons/LivraisonsPage').th
 const SavPage = lazy(() => import('@/pages/sav/SavPage').then(m => ({ default: m.SavPage })));
 const SavDetailPage = lazy(() => import('@/pages/sav/SavDetailPage').then(m => ({ default: m.SavDetailPage })));
 const FinancePage = lazy(() => import('@/pages/FinancePage').then(m => ({ default: m.FinancePage })));
+const CataloguePage = lazy(() => import('@/pages/catalogue/CataloguePage').then(m => ({ default: m.CataloguePage })));
+const ProduitFormPage = lazy(() => import('@/pages/catalogue/ProduitFormPage').then(m => ({ default: m.ProduitFormPage })));
 const ParametresPage = lazy(() => import('@/pages/ParametresPage').then(m => ({ default: m.ParametresPage })));
 const AuditPage = lazy(() => import('@/pages/AuditPage').then(m => ({ default: m.AuditPage })));
 const BoutiquePage = lazy(() => import('@/espace-client/BoutiquePage').then(m => ({ default: m.BoutiquePage })));
@@ -82,6 +84,9 @@ export default function App() {
                     <Route path="sav" element={<RequireRole roles={[Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock]}><SavPage /></RequireRole>} />
                     <Route path="sav/:id" element={<RequireRole roles={[Roles.Commercial, Roles.Technicien, Roles.GestionnaireStock]}><SavDetailPage /></RequireRole>} />
                     <Route path="finance" element={<RequireRole roles={[Roles.Commercial]}><FinancePage /></RequireRole>} />
+                    <Route path="catalogue" element={<RequireRole roles={[Roles.Catalogue]}><CataloguePage /></RequireRole>} />
+                    <Route path="catalogue/nouveau" element={<RequireRole roles={[Roles.Catalogue]}><ProduitFormPage /></RequireRole>} />
+                    <Route path="catalogue/:id" element={<RequireRole roles={[Roles.Catalogue]}><ProduitFormPage /></RequireRole>} />
                     <Route path="audit" element={<RequireRole roles={[]}><AuditPage /></RequireRole>} />
                     <Route path="parametres" element={<RequireRole roles={[]}><ParametresPage /></RequireRole>} />
                 </Route>

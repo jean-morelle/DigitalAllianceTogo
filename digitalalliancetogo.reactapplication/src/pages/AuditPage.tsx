@@ -13,7 +13,7 @@ import { api } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 import type { JournalAudit, PaginatedList } from '@/lib/types';
 
-const ENTITES = ['Commande', 'Devis', 'Paiement', 'Livraison', 'Remboursement', 'Avoir', 'TicketSAV', 'StockProduit', 'EcartReception', 'Entrepot', 'ParametresEntreprise'];
+const ENTITES = ['Commande', 'Devis', 'Paiement', 'Livraison', 'Remboursement', 'Avoir', 'TicketSAV', 'StockProduit', 'EcartReception', 'Entrepot', 'Produit', 'Categorie', 'Marque', 'ParametresEntreprise'];
 const TOUTES = 'toutes';
 
 interface Filtres {

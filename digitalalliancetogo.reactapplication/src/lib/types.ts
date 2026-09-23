@@ -409,9 +409,12 @@ export interface ProduitDetail extends Omit<ProduitCatalogue, 'imagePrincipaleUr
     attributs: { id: string; cle: string; valeur: string; ordre: number }[];
 }
 
+/** Catégorie ou marque. */
 export interface Categorie {
     id: string;
     nom: string;
+    description?: string;
+    actif?: boolean;
 }
 
 export interface LignePanier {
