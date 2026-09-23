@@ -43,6 +43,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateUtilisateurCommand>()
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+// Journal d'audit (écrit dans la même transaction que l'opération métier)
+builder.Services.AddScoped<IAuditService, AuditService>();
+
 // Register PasswordHasher
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 

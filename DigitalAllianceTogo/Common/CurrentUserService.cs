@@ -28,5 +28,9 @@ namespace DigitalAllianceTogo.Common
                 return Guid.TryParse(claim, out var id) ? id : null;
             }
         }
+
+        public string? AdresseIP => _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+        public bool EstDansRole(string role) => _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
     }
 }

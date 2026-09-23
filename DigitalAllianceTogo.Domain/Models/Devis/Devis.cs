@@ -22,6 +22,16 @@ namespace DigitalAllianceTogo.Domain.Models.Devis
         public Models.Security.Utilisateur? ValidePar { get; set; }
         public DateTime? DateValidation { get; set; }
 
+        // Dernier message du client (motif de refus ou modification demandée)
+        public string? CommentaireClient { get; set; }
+
+        // Dernier message interne (ex : motif du refus de validation par l'Administrateur)
+        public string? CommentaireInterne { get; set; }
+
+        // Jeton de concurrence optimiste (colonne système xmin de PostgreSQL) :
+        // empêche par exemple qu'un devis soit accepté deux fois en même temps.
+        public uint Version { get; set; }
+
         // Commercial qui a créé le devis
         public Guid? CreeParId { get; set; }
         public Models.Security.Utilisateur? CreePar { get; set; }

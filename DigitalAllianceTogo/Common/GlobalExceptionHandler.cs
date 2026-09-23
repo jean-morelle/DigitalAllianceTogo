@@ -1,6 +1,7 @@
 ﻿using DigitalAllianceTogo.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DigitalAllianceTogo.Common
 {
@@ -32,8 +33,8 @@ namespace DigitalAllianceTogo.Common
 
             if (exception is ValidationException validationException)
                 problemDetails.Extensions["errors"] = validationException.Errors;
-            else
-                problemDetails.Detail = exception.Message;
+            else if (statusCode != StatusCodes.Status500InternalServerError)
+                problemDetails.Detail = exception.Message; // jamais le message technique d'une erreur 500
 
             httpContext.Response.StatusCode = statusCode;
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
@@ -47,6 +48,9 @@ namespace DigitalAllianceTogo.Common
             ValidationException => (StatusCodes.Status400BadRequest, "Erreur de validation"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflit"),
             UnauthorizedException => (StatusCodes.Status401Unauthorized, "Non autorisé"),
+            ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Accès refusé"),
+            // Deux utilisateurs ont modifié la même ressource en même temps (ex : double acceptation d'un devis)
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "La ressource a été modifiée entre-temps, rechargez-la et réessayez"),
             _ => (StatusCodes.Status500InternalServerError, "Une erreur interne s'est produite")
         };
     }

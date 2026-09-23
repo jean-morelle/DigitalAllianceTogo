@@ -21,6 +21,12 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Devis
             // Calculée à partir de Remise / SousTotal
             builder.Ignore(d => d.TauxRemise);
 
+            builder.Property(d => d.CommentaireClient).HasMaxLength(1000);
+            builder.Property(d => d.CommentaireInterne).HasMaxLength(1000);
+
+            // Mappé sur la colonne système xmin : aucune colonne créée, PostgreSQL la gère
+            builder.Property(d => d.Version).IsRowVersion();
+
             builder.HasOne(d => d.ValidePar)
                 .WithMany()
                 .HasForeignKey(d => d.ValideParId)

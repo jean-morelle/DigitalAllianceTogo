@@ -1,0 +1,38 @@
+using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Domain.Models.Audit;
+using System.Text.Json;
+
+namespace DigitalAllianceTogo.Infrastructure.Services
+{
+    public class AuditService : IAuditService
+    {
+        private readonly IApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
+
+        public AuditService(IApplicationDbContext context, ICurrentUserService currentUserService)
+        {
+            _context = context;
+            _currentUserService = currentUserService;
+        }
+
+        public void Enregistrer(string action, string entite, Guid entiteId, object? avant = null, object? apres = null)
+        {
+            // Toute opération auditée doit être faite par un utilisateur identifié
+            var utilisateurId = _currentUserService.UtilisateurId
+                ?? throw new InvalidOperationException("Impossible de journaliser une opération sans utilisateur authentifié.");
+
+            _context.JournauxAudit.Add(new JournalAudit
+            {
+                Id = Guid.NewGuid(),
+                DateAction = DateTime.UtcNow,
+                Action = action,
+                Entite = entite,
+                EntiteId = entiteId,
+                AncienneValeur = avant is null ? null : JsonSerializer.Serialize(avant),
+                NouvelleValeur = apres is null ? null : JsonSerializer.Serialize(apres),
+                AdresseIP = _currentUserService.AdresseIP,
+                UtilisateurId = utilisateurId
+            });
+        }
+    }
+}

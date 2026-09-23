@@ -1,4 +1,4 @@
-﻿namespace DigitalAllianceTogo.Application.Common.Interfaces
+namespace DigitalAllianceTogo.Application.Common.Interfaces
 {
     public interface ICurrentUserService
     {
@@ -9,5 +9,11 @@
         /// </summary>
         Guid? UtilisateurId { get; }
         bool EstAuthentifie { get; }
+
+        /// <summary>Adresse IP de l'appelant, pour le journal d'audit.</summary>
+        string? AdresseIP { get; }
+
+        /// <summary>Vrai si l'utilisateur possède ce rôle (voir Common.Security.Roles).</summary>
+        bool EstDansRole(string role);
     }
 }
