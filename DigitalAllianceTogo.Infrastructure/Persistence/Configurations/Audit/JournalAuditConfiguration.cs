@@ -19,6 +19,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Audit
 
             // Index pour retrouver rapidement l'historique d'une entité donnée
             builder.HasIndex(j => new { j.Entite, j.EntiteId });
+
+            // Consultation : journal filtré par période (le plus récent d'abord)
+            builder.HasIndex(j => j.DateAction);
         }
     }
 }

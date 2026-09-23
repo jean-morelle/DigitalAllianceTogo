@@ -12,6 +12,7 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Devis
 
             builder.Property(d => d.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(d => d.Reference).IsUnique();
+            builder.HasIndex(d => d.Statut);
 
             builder.Property(d => d.Statut)
                 .HasConversion<string>()

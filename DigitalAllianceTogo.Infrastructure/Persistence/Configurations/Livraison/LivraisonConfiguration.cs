@@ -13,6 +13,7 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Livraiso
 
             builder.Property(l => l.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(l => l.Reference).IsUnique();
+            builder.HasIndex(l => l.Statut);
 
             builder.Property(l => l.Type)
                 .HasConversion<string>()

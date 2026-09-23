@@ -14,6 +14,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Commande
             builder.Property(c => c.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(c => c.Reference).IsUnique();
 
+            // Supervision et statistiques : files de travail par statut
+            builder.HasIndex(c => c.Statut);
+
             builder.Property(c => c.Version).IsRowVersion();
 
             builder.Property(c => c.Statut)

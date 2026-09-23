@@ -91,5 +91,28 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence
             // présentes dans cet assembly (dossier Persistence/Configurations/**).
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
+
+        /// <summary>
+        /// Règle absolue (§45) : le journal d'audit ne s'écrit qu'en ajout. Toute modification
+        /// ou suppression d'une ligne existante est refusée ici, et par un trigger en base
+        /// (migration AuditInviolable) pour les accès qui ne passent pas par l'application.
+        /// </summary>
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            ProtegerJournalAudit();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            ProtegerJournalAudit();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        private void ProtegerJournalAudit()
+        {
+            if (ChangeTracker.Entries<JournalAudit>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+                throw new InvalidOperationException("Le journal d'audit est inviolable : une entrée ne peut être ni modifiée ni supprimée.");
+        }
     }
 }

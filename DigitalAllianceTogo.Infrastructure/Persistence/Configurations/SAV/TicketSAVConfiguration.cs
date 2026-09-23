@@ -13,6 +13,7 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.SAV
 
             builder.Property(t => t.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(t => t.Reference).IsUnique();
+            builder.HasIndex(t => t.Statut);
             builder.Property(t => t.Motif).IsRequired().HasMaxLength(1000);
 
             builder.Property(t => t.Statut)

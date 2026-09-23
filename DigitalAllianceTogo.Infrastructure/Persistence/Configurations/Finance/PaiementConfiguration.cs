@@ -15,6 +15,9 @@ namespace DigitalAllianceTogo.Infrastructure.Persistence.Configurations.Finance
             builder.Property(p => p.Reference).IsRequired().HasMaxLength(50);
             builder.HasIndex(p => p.Reference).IsUnique();
 
+            // Paiements à vérifier / chiffre d'affaires encaissé sur une période
+            builder.HasIndex(p => new { p.Statut, p.DateConfirmation });
+
             builder.Property(p => p.Statut)
                 .HasConversion<string>()
                 .HasMaxLength(30)
