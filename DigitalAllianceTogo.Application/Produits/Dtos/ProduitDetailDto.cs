@@ -22,6 +22,9 @@ namespace DigitalAllianceTogo.Application.Produits.Dtos
         public List<ImageProduitDto> Images { get; set; } = new();
         public List<AttributProduitDto> Attributs { get; set; } = new();
 
+        /// <summary>Au moins une unité disponible (renseigné par la requête de détail).</summary>
+        public bool EnStock { get; set; }
+
         public static ProduitDetailDto FromEntity(Produit produit)
         {
             return new ProduitDetailDto

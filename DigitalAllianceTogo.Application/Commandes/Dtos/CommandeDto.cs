@@ -23,6 +23,9 @@ namespace DigitalAllianceTogo.Application.Commandes.Dtos
         public List<Finance.Queries.RemboursementDto> Remboursements { get; set; } = new();
         public List<Finance.Queries.AvoirDto> Avoirs { get; set; } = new();
 
+        /// <summary>Suivi des livraisons (initiale, relivraison, remplacement SAV).</summary>
+        public List<SuiviLivraisonDto> Livraisons { get; set; } = new();
+
         /// <summary>Total de la version active − payé net (négatif : trop-perçu à rendre).</summary>
         public decimal ResteAPayer { get; set; }
 
@@ -32,6 +35,8 @@ namespace DigitalAllianceTogo.Application.Commandes.Dtos
         /// <summary>Date limite pour payer (ou repayer), si la commande attend le client.</summary>
         public DateTime? DateLimitePaiement { get; set; }
     }
+
+    public record SuiviLivraisonDto(string Reference, string Type, string Statut, DateTime DatePlanifiee, DateTime? DateLivraison, string? MotifEchec);
 
     public class VersionCommandeDto
     {

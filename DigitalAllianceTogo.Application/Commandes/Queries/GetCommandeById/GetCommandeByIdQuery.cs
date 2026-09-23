@@ -70,8 +70,15 @@ namespace DigitalAllianceTogo.Application.Commandes.Queries.GetCommandeById
                 .OrderBy(v => v.NumeroVersion)
                 .ToListAsync(cancellationToken);
 
+            var livraisons = await _context.Livraisons.AsNoTracking()
+                .Where(l => l.CommandeId == commande.Id)
+                .OrderBy(l => l.DatePlanifiee)
+                .Select(l => new SuiviLivraisonDto(l.Reference, l.Type.ToString(), l.Statut.ToString(), l.DatePlanifiee, l.DateLivraison, l.MotifEchec))
+                .ToListAsync(cancellationToken);
+
             return new CommandeDetailDto
             {
+                Livraisons = livraisons,
                 Remboursements = remboursements,
                 Avoirs = avoirs,
                 ResteAPayer = version.Total - await SoldeCommande.PayeNetAsync(_context, commande.Id, cancellationToken),

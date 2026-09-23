@@ -62,7 +62,8 @@ namespace DigitalAllianceTogo.Application.Produits.Queries.GetProduits
                 DateCreation = p.DateCreation,
                 CategorieNom = p.Categorie.Nom,
                 MarqueNom = p.Marque.Nom,
-                ImagePrincipaleUrl = p.Images.Where(i => i.EstPrincipale).Select(i => i.Url).FirstOrDefault()
+                ImagePrincipaleUrl = p.Images.Where(i => i.EstPrincipale).Select(i => i.Url).FirstOrDefault(),
+                EnStock = p.Stocks.Any(s => s.Entrepot.Actif && s.QuantitePhysique - s.QuantiteReservee > 0)
             });
 
             return await PaginatedList<ProduitDto>.CreateAsync(dtoQuery, request.PageNumber, request.PageSize);

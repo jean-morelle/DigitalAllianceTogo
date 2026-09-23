@@ -2,10 +2,9 @@ using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Devis.Common;
 using DigitalAllianceTogo.Domain.Enum;
-using DigitalAllianceTogo.Domain.Models.Commande;
+using DigitalAllianceTogo.Application.Commandes.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using CommandeEntity = DigitalAllianceTogo.Domain.Models.Commande.Commande;
 
 namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
 {
@@ -52,70 +51,18 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
             if (devis.Statut != StatutDevis.Envoye)
                 throw new ConflictException($"Un devis au statut {devis.Statut} ne peut pas être accepté.");
 
-            var adresse = await _context.Adresses.AsNoTracking()
-                .FirstOrDefaultAsync(a => a.Id == request.AdresseLivraisonId && a.ClientId == devis.ClientId, cancellationToken)
-                ?? throw new NotFoundException("Adresse", request.AdresseLivraisonId);
-
-            var telephone = request.TelephoneContact;
-            if (string.IsNullOrWhiteSpace(telephone))
-            {
-                telephone = await _context.Clients
-                    .Where(c => c.Id == devis.ClientId)
-                    .Select(c => c.Telephone)
-                    .FirstOrDefaultAsync(cancellationToken);
-            }
-            if (string.IsNullOrWhiteSpace(telephone))
-                throw new ConflictException("Un téléphone de contact est nécessaire pour la livraison.");
+            var (adresse, telephone) = await CreationCommande.ResoudreLivraisonAsync(
+                _context, devis.ClientId, request.AdresseLivraisonId, request.TelephoneContact, cancellationToken);
 
             var avant = DevisHelper.Instantane(devis);
             devis.Statut = StatutDevis.Accepte;
 
-            var commande = new CommandeEntity
-            {
-                Id = Guid.NewGuid(),
-                Reference = DigitalAllianceTogo.Application.Common.References.Generer("CMD"),
-                Statut = StatutCommande.CommandeCreee,
-                DateCreation = DateTime.UtcNow,
-                ClientId = devis.ClientId,
-                DevisOrigineId = devis.Id,
-                VersionActive = 1,
-                AdresseLivraison = new AdresseLivraisonCommande
-                {
-                    Id = Guid.NewGuid(),
-                    Ligne1 = adresse.Ligne1,
-                    Ligne2 = adresse.Ligne2,
-                    Ville = adresse.Ville,
-                    Pays = adresse.Pays,
-                    CodePostal = adresse.CodePostal,
-                    TelephoneContact = telephone
-                }
-            };
-
             // Version 1 = copie exacte du devis accepté (prix figés au moment du devis)
-            var version = new VersionCommande
-            {
-                Id = Guid.NewGuid(),
-                NumeroVersion = 1,
-                DateCreation = DateTime.UtcNow,
-                MotifModification = $"Création depuis le devis {devis.Reference}",
-                SousTotal = devis.SousTotal,
-                Remise = devis.Remise,
-                Total = devis.Total,
-                Active = true
-            };
-            foreach (var ligne in devis.Lignes)
-            {
-                version.Lignes.Add(new LigneCommande
-                {
-                    Id = Guid.NewGuid(),
-                    ProduitId = ligne.ProduitId,
-                    Quantite = ligne.Quantite,
-                    PrixUnitaire = ligne.PrixUnitaire,
-                    Remise = ligne.Remise,
-                    Total = ligne.Total
-                });
-            }
-            commande.Versions.Add(version);
+            var commande = CreationCommande.Construire(
+                devis.ClientId, adresse, telephone,
+                devis.Lignes.Select(l => new CreationCommande.LigneNouvelle(l.ProduitId, l.Quantite, l.PrixUnitaire, l.Remise, l.Total)),
+                devis.SousTotal, devis.Remise, devis.Total,
+                $"Création depuis le devis {devis.Reference}", devis.Id);
 
             _context.Commandes.Add(commande);
             _audit.Enregistrer("AcceptationDevis", "Devis", devis.Id, avant, DevisHelper.Instantane(devis));
@@ -125,7 +72,7 @@ namespace DigitalAllianceTogo.Application.Devis.Commands.AccepterDevis
                 Statut = commande.Statut.ToString(),
                 DevisOrigine = devis.Reference,
                 Version = 1,
-                version.Total
+                devis.Total
             });
 
             // Une seule sauvegarde : devis accepté + commande créée, ou rien du tout.

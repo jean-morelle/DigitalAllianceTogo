@@ -38,6 +38,9 @@ namespace DigitalAllianceTogo.Application.TableauDeBord.Queries
             {
                 files.Add(await FileAsync("paiements-a-verifier", "Preuves de paiement à vérifier", Roles.Commercial,
                     _context.Paiements.Where(p => p.Statut == StatutPaiement.EnAttente).Select(p => p.DatePaiement), ct));
+                files.Add(await FileAsync("devis-demandes-clients", "Demandes de devis des clients (panier)", Roles.Commercial,
+                    _context.Devis.Where(d => d.Statut == StatutDevis.Brouillon && d.ValideParId == null && d.CreeParId == d.Client.UtilisateurId)
+                        .Select(d => d.DateCreation), ct));
                 files.Add(await FileAsync("devis-a-envoyer", "Devis validés pas encore envoyés", Roles.Commercial,
                     _context.Devis.Where(d => d.Statut == StatutDevis.Brouillon && d.ValideParId != null).Select(d => d.DateCreation), ct));
                 files.Add(await FileAsync("devis-modification-demandee", "Devis dont le client demande une modification", Roles.Commercial,

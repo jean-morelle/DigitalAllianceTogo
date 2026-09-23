@@ -15,6 +15,9 @@ namespace DigitalAllianceTogo.Application.Produits.Dtos
         public string MarqueNom { get; set; } = string.Empty;
         public string? ImagePrincipaleUrl { get; set; }
 
+        /// <summary>Au moins une unité disponible (physique − réservé) dans un entrepôt actif.</summary>
+        public bool EnStock { get; set; }
+
         public static ProduitDto FromEntity(Produit produit)
         {
             return new ProduitDto
