@@ -88,6 +88,9 @@ const LIBELLES: Record<string, string> = {
     EnAttenteDecision: 'À décider',
     IntegreAuStock: 'Intégré au stock',
     RetourneFournisseur: 'Retourné au fournisseur',
+    // Décisions SAV
+    Remplacement: 'Remplacement',
+    Remboursement: 'Remboursement',
     // Types de livraison
     Initial: 'Livraison',
     Relivraison: 'Relivraison',

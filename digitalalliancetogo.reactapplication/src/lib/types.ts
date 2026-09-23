@@ -347,3 +347,41 @@ export interface Livreur {
     telephone: string;
     livraisonsEnCours: number;
 }
+
+// ---------- SAV ----------
+
+export interface TicketSav {
+    id: string;
+    reference: string;
+    statut: string;
+    dateCreation: string;
+    motif: string;
+    quantite: number;
+    decision: string | null;
+    resolution: string | null;
+    dateCloture: string | null;
+    ancienProduitReceptionne: boolean;
+    clientId: string;
+    codeClient: string;
+    commandeId: string;
+    commandeReference: string;
+    ligneCommandeId: string;
+    produitId: string;
+    produitNom: string;
+    technicienId: string | null;
+}
+
+export interface SuiviSav {
+    id: string;
+    type: string;
+    reference: string;
+    statut: string;
+    montant: number | null;
+}
+
+export interface TicketSavDetail extends TicketSav {
+    diagnostics: { date: string; conclusion: string; reparable: boolean; recommandation: string | null; technicienId: string }[];
+    interventions: { dateDebut: string; dateFin: string | null; description: string; resultat: string | null; technicienId: string }[];
+    livraisons: SuiviSav[];
+    regularisations: SuiviSav[];
+}

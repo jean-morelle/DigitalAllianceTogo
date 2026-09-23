@@ -14,7 +14,7 @@ import type { Livraison, Livreur } from '@/lib/types';
 function useRafraichirLivraisons() {
     const queryClient = useQueryClient();
     return () => {
-        for (const cle of ['livraisons', 'commande', 'commandes', 'stocks', 'a-traiter', 'livreurs']) void queryClient.invalidateQueries({ queryKey: [cle] });
+        for (const cle of ['livraisons', 'commande', 'commandes', 'stocks', 'a-traiter', 'livreurs', 'sav', 'ticket-sav']) void queryClient.invalidateQueries({ queryKey: [cle] });
     };
 }
 
@@ -25,8 +25,11 @@ function executer(promesse: Promise<unknown>, succes: string, rafraichir: () => 
         .catch((e: Error) => { toast.error(e.message); throw e; });
 }
 
-/** Planifier la livraison d'une commande prête : livreur et date. */
-export function DialoguePlanifier({ commandeId, relivraison }: { commandeId: string; relivraison?: boolean }) {
+/**
+ * Planifier une livraison : commande prête (commandeId) ou produit de remplacement SAV (ticketId).
+ * Choix du livreur et de la date.
+ */
+export function DialoguePlanifier({ commandeId, ticketId, relivraison }: { commandeId?: string; ticketId?: string; relivraison?: boolean }) {
     const rafraichir = useRafraichirLivraisons();
     // Calculées une fois (pas pendant chaque rendu) : aujourd'hui au plus tôt, demain par défaut
     const [{ aujourdhui, demain }] = useState(() => ({
@@ -39,7 +42,7 @@ export function DialoguePlanifier({ commandeId, relivraison }: { commandeId: str
 
     return (
         <DialogueAction
-            declencheur={<Button><CalendarPlus /> {relivraison ? 'Planifier la relivraison' : 'Planifier la livraison'}</Button>}
+            declencheur={<Button><CalendarPlus /> {ticketId ? 'Planifier la livraison du remplacement' : relivraison ? 'Planifier la relivraison' : 'Planifier la livraison'}</Button>}
             titre={relivraison ? 'Planifier une nouvelle tentative' : 'Planifier la livraison'}
             description="Le stock ne sort qu'au moment de la remise du colis au livreur."
             libelleConfirmer="Planifier"
@@ -48,7 +51,11 @@ export function DialoguePlanifier({ commandeId, relivraison }: { commandeId: str
                     toast.error('Choisissez un livreur.');
                     return Promise.reject(new Error('Livreur manquant'));
                 }
-                return executer(api.post('/livraisons', { commandeId, livreurId, datePlanifiee: `${date}T08:00:00Z` }), 'Livraison planifiée.', rafraichir);
+                const datePlanifiee = `${date}T08:00:00Z`;
+                const appel = ticketId
+                    ? api.post(`/sav/${ticketId}/livraisons`, { livreurId, datePlanifiee })
+                    : api.post('/livraisons', { commandeId, livreurId, datePlanifiee });
+                return executer(appel, ticketId ? 'Livraison du remplacement planifiée.' : 'Livraison planifiée.', rafraichir);
             }}
         >
             <div className="grid gap-4">
@@ -74,7 +81,7 @@ export function DialoguePlanifier({ commandeId, relivraison }: { commandeId: str
     );
 }
 
-export function BoutonRemettre({ livraison }: { livraison: Livraison }) {
+export function BoutonRemettre({ livraison }: { livraison: Pick<Livraison, 'id' | 'reference' | 'livreurNom'> }) {
     const rafraichir = useRafraichirLivraisons();
     return (
         <DialogueAction

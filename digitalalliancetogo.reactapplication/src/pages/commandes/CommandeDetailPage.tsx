@@ -18,6 +18,7 @@ import { Roles } from '@/lib/roles';
 import { formatDate, formatFcfa, libelle } from '@/lib/format';
 import type { CommandeDetail, JournalAudit, LigneCommande, Livraison, PaginatedList, VersionCommande } from '@/lib/types';
 import { DialoguePlanifier } from '@/pages/livraisons/ActionsLivraison';
+import { DialogueNouveauTicket } from '@/pages/sav/DialogueNouveauTicket';
 import { cn } from '@/lib/utils';
 
 type Mode = 'Remboursement' | 'Avoir';
@@ -258,6 +259,7 @@ export function CommandeDetailPage() {
                             {payee && <ChoixRegularisation valeur={modeAnnulation} surChangement={setModeAnnulation} />}
                         </DialogueAction>
                     )}
+                    {aRole(Roles.Commercial) && (s === 'Livree' || s === 'Cloturee') && <DialogueNouveauTicket commandeId={c.id} />}
                     {aRole(Roles.Commercial) && s === 'Livree' && (
                         <DialogueAction declencheur={<Button variant="outline"><Lock /> Clôturer</Button>} titre="Clôturer la commande"
                             description="Un ticket SAV restera possible après la clôture." libelleConfirmer="Clôturer"
