@@ -161,6 +161,7 @@ export interface CommandeDetail extends Commande {
     avoirs: Avoir[];
     resteAPayer: number;
     versions: VersionCommande[];
+    livraisons: SuiviLivraison[];
     dateLimitePaiement: string | null;
 }
 
@@ -384,4 +385,59 @@ export interface TicketSavDetail extends TicketSav {
     interventions: { dateDebut: string; dateFin: string | null; description: string; resultat: string | null; technicienId: string }[];
     livraisons: SuiviSav[];
     regularisations: SuiviSav[];
+}
+
+// ---------- Espace client ----------
+
+export interface ProduitCatalogue {
+    id: string;
+    reference: string;
+    nom: string;
+    prix: number;
+    actif: boolean;
+    categorieNom: string;
+    marqueNom: string;
+    imagePrincipaleUrl: string | null;
+    enStock: boolean;
+}
+
+export interface ProduitDetail extends Omit<ProduitCatalogue, 'imagePrincipaleUrl'> {
+    description: string;
+    categorieId: string;
+    marqueId: string;
+    images: { id: string; url: string; ordre: number; estPrincipale: boolean }[];
+    attributs: { id: string; cle: string; valeur: string; ordre: number }[];
+}
+
+export interface Categorie {
+    id: string;
+    nom: string;
+}
+
+export interface LignePanier {
+    produitId: string;
+    reference: string;
+    nom: string;
+    imageUrl: string | null;
+    prixUnitaire: number;
+    quantite: number;
+    total: number;
+    quantiteDisponible: number;
+    actif: boolean;
+}
+
+export interface Panier {
+    lignes: LignePanier[];
+    nombreArticles: number;
+    total: number;
+    toutDisponible: boolean;
+}
+
+export interface SuiviLivraison {
+    reference: string;
+    type: string;
+    statut: string;
+    datePlanifiee: string;
+    dateLivraison: string | null;
+    motifEchec: string | null;
 }

@@ -19,7 +19,7 @@ const APRES_LIVRAISON = ['Livree', 'Cloturee'];
  * Ouverture d'un ticket SAV (§26) : le client appelle, le Commercial retrouve la commande
  * (ou part d'une commande donnée), choisit le produit concerné et décrit la panne.
  */
-export function DialogueNouveauTicket({ commandeId: commandeFixe }: { commandeId?: string }) {
+export function DialogueNouveauTicket({ commandeId: commandeFixe, surCree }: { commandeId?: string; surCree?: (id: string) => void }) {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [recherche, setRecherche] = useState('');
@@ -55,9 +55,9 @@ export function DialogueNouveauTicket({ commandeId: commandeFixe }: { commandeId
                 }
                 return api.post<string>('/sav', { ligneCommandeId: ligne.id, quantite, motif: motif.trim() })
                     .then(id => {
-                        toast.success('Ticket ouvert : il attend le diagnostic du technicien.');
+                        toast.success('Ticket ouvert : un technicien va diagnostiquer le produit.');
                         void queryClient.invalidateQueries({ queryKey: ['sav'] });
-                        navigate(`/sav/${id}`);
+                        if (surCree) surCree(id); else navigate(`/sav/${id}`);
                     })
                     .catch((e: Error) => { toast.error(e.message); throw e; });
             }}

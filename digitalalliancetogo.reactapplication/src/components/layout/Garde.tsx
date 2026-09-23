@@ -1,28 +1,30 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { ShieldAlert } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import { Roles, type Role } from '@/lib/roles';
 import { NAVIGATION } from './navigation';
 
-/** Exige une session ; un Client (sans rôle interne) n'a pas accès au back-office. */
+/** Back-office : exige une session du personnel ; un client est renvoyé vers la boutique. */
 export function RequireAuth({ children }: { children: ReactNode }) {
-    const { session, deconnecter } = useAuth();
+    const { session } = useAuth();
     const location = useLocation();
 
-    if (!session) return <Navigate to="/connexion" replace state={{ depuis: location.pathname }} />;
+    // Visiteur sur la racine du site : la vitrine publique ; ailleurs : connexion puis retour
+    if (!session) return location.pathname === '/'
+        ? <Navigate to="/boutique" replace />
+        : <Navigate to="/connexion" replace state={{ depuis: location.pathname }} />;
 
-    const estPersonnel = session.roles.some(r => r !== Roles.Client);
-    if (!estPersonnel) {
-        return (
-            <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
-                <ShieldAlert className="text-muted-foreground size-10" />
-                <p className="max-w-sm">Cet espace est réservé au personnel de Togo Informatique. L'espace client arrive bientôt.</p>
-                <Button variant="outline" onClick={deconnecter}>Se déconnecter</Button>
-            </div>
-        );
-    }
+    // Un client n'a rien à faire au back-office : direction son espace
+    if (!session.roles.some(r => r !== Roles.Client)) return <Navigate to="/boutique" replace />;
+    return <>{children}</>;
+}
+
+/** Espace client : exige un compte client connecté. */
+export function RequireClient({ children }: { children: ReactNode }) {
+    const { session } = useAuth();
+    const location = useLocation();
+    if (!session) return <Navigate to="/connexion" replace state={{ depuis: location.pathname }} />;
+    if (!session.roles.includes(Roles.Client)) return <Navigate to="/" replace />;
     return <>{children}</>;
 }
 

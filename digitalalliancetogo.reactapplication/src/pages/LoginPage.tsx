@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/lib/auth';
+import { Roles } from '@/lib/roles';
 
 export function LoginPage() {
     const { session, connecter } = useAuth();
@@ -17,15 +18,16 @@ export function LoginPage() {
     const [erreur, setErreur] = useState<string | null>(null);
     const [enCours, setEnCours] = useState(false);
 
-    if (session) return <Navigate to="/" replace />;
+    if (session) return <Navigate to={session.roles.includes(Roles.Client) ? '/compte' : '/'} replace />;
 
     const soumettre = async (e: FormEvent) => {
         e.preventDefault();
         setErreur(null);
         setEnCours(true);
         try {
-            await connecter(email.trim(), motDePasse);
-            const retour = (location.state as { depuis?: string } | null)?.depuis ?? '/';
+            const nouvelle = await connecter(email.trim(), motDePasse);
+            const client = nouvelle.roles.includes(Roles.Client);
+            const retour = (location.state as { depuis?: string } | null)?.depuis ?? (client ? '/compte' : '/');
             navigate(retour, { replace: true });
         } catch (err) {
             setErreur(err instanceof Error ? err.message : 'Connexion impossible.');
@@ -40,7 +42,7 @@ export function LoginPage() {
                 <CardHeader className="text-center">
                     <div className="bg-primary text-primary-foreground mx-auto mb-2 flex size-12 items-center justify-center rounded-lg text-lg font-bold">TI</div>
                     <CardTitle className="text-xl">Togo Informatique</CardTitle>
-                    <CardDescription>Espace du personnel</CardDescription>
+                    <CardDescription>Clients et personnel</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={soumettre} className="grid gap-4">
@@ -62,6 +64,10 @@ export function LoginPage() {
                             Se connecter
                         </Button>
                     </form>
+                    <p className="text-muted-foreground mt-4 text-center text-sm">
+                        Nouveau client ? <Link to="/inscription" className="text-primary hover:underline">Créer un compte</Link>
+                        {' · '}<Link to="/boutique" className="text-primary hover:underline">Voir la boutique</Link>
+                    </p>
                 </CardContent>
             </Card>
         </div>
