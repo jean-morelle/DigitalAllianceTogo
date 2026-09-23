@@ -1,5 +1,6 @@
 using DigitalAllianceTogo.Application.Common.Interfaces;
 using DigitalAllianceTogo.Application.Common.Models;
+using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Produits.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,10 +20,12 @@ namespace DigitalAllianceTogo.Application.Produits.Queries.GetProduits
     public class GetProduitsQueryHandler : IRequestHandler<GetProduitsQuery, PaginatedList<ProduitDto>>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ICurrentUserService _user;
 
-        public GetProduitsQueryHandler(IApplicationDbContext context)
+        public GetProduitsQueryHandler(IApplicationDbContext context, ICurrentUserService user)
         {
             _context = context;
+            _user = user;
         }
 
         public async Task<PaginatedList<ProduitDto>> Handle(GetProduitsQuery request, CancellationToken cancellationToken)
@@ -47,7 +50,11 @@ namespace DigitalAllianceTogo.Application.Produits.Queries.GetProduits
             if (request.MarqueId.HasValue)
                 query = query.Where(p => p.MarqueId == request.MarqueId.Value);
 
-            if (request.Actif.HasValue)
+            // Produits retirés de la vente, ou dont la catégorie ou la marque l'est :
+            // visibles seulement de l'Administrateur et du Catalogue
+            if (!_user.EstDansRole(Roles.Admin) && !_user.EstDansRole(Roles.Catalogue))
+                query = query.Where(p => p.Actif && p.Categorie.Actif && p.Marque.Actif);
+            else if (request.Actif.HasValue)
                 query = query.Where(p => p.Actif == request.Actif.Value);
 
             query = query.OrderBy(p => p.Nom);

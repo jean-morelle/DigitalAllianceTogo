@@ -14,14 +14,17 @@ namespace DigitalAllianceTogo.Application.Fichiers
         public const string PrefixeLien = "/api/fichiers/";
 
         /// <summary>Catégories = sous-dossiers de stockage.</summary>
-        public static readonly IReadOnlyCollection<string> Categories = new[] { "paiements", "livraisons" };
+        public static readonly IReadOnlyCollection<string> Categories = new[] { "paiements", "livraisons", CategorieProduits };
+
+        /// <summary>Photos du catalogue : publiques, envoyées par Admin et Catalogue uniquement, jamais en PDF.</summary>
+        public const string CategorieProduits = "produits";
 
         public sealed record TypeFichier(string Extension, string ContentType);
 
         private static readonly TypeFichier Jpeg = new("jpg", "image/jpeg");
         private static readonly TypeFichier Png = new("png", "image/png");
         private static readonly TypeFichier Webp = new("webp", "image/webp");
-        private static readonly TypeFichier Pdf = new("pdf", "application/pdf");
+        public static readonly TypeFichier Pdf = new("pdf", "application/pdf");
 
         /// <summary>Type réel d'après les premiers octets (« nombres magiques ») ; null si non accepté.</summary>
         public static TypeFichier? DetecterType(ReadOnlySpan<byte> entete)
@@ -67,6 +70,20 @@ namespace DigitalAllianceTogo.Application.Fichiers
                 return parties.Length == 2 && EstNomValide(parties[0], parties[1]);
             }
             return Uri.TryCreate(lien, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
+        }
+
+        /// <summary>Image produit : une photo envoyée dans « produits » ou une adresse web http(s).</summary>
+        public static bool EstLienImageProduitValide(string? lien)
+        {
+            if (string.IsNullOrWhiteSpace(lien))
+                return false;
+            if (lien.StartsWith(PrefixeLien, StringComparison.Ordinal))
+            {
+                var parties = lien[PrefixeLien.Length..].Split('/');
+                return parties.Length == 2 && parties[0] == CategorieProduits && EstNomValide(parties[0], parties[1])
+                    && TypeDepuisNom(parties[1]) != Pdf;
+            }
+            return EstLienPreuveValide(lien);
         }
     }
 }

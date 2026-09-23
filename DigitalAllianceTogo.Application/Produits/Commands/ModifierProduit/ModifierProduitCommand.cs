@@ -19,10 +19,12 @@ namespace DigitalAllianceTogo.Application.Produits.Commands.ModifierProduit
     public class ModifierProduitCommandHandler : IRequestHandler<ModifierProduitCommand>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IAuditService _audit;
 
-        public ModifierProduitCommandHandler(IApplicationDbContext context)
+        public ModifierProduitCommandHandler(IApplicationDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         public async Task Handle(ModifierProduitCommand request, CancellationToken cancellationToken)
@@ -41,12 +43,18 @@ namespace DigitalAllianceTogo.Application.Produits.Commands.ModifierProduit
             // Note : Reference n'est volontairement PAS modifiable ici — c'est un
             // identifiant métier stable, le changer casserait la traçabilité des
             // lignes de commande/devis existantes qui affichent cette référence.
+            var avant = new { produit.Nom, produit.Prix, produit.Actif, produit.CategorieId, produit.MarqueId };
+
             produit.Nom = request.Nom;
             produit.Description = request.Description;
             produit.Prix = request.Prix;
             produit.CategorieId = request.CategorieId;
             produit.MarqueId = request.MarqueId;
             produit.Actif = request.Actif;
+
+            // Prix et mise en vente : tracés (un changement de prix se voit sur les ventes)
+            _audit.Enregistrer("ModificationProduit", "Produit", produit.Id, avant,
+                new { produit.Nom, produit.Prix, produit.Actif, produit.CategorieId, produit.MarqueId });
 
             await _context.SaveChangesAsync(cancellationToken);
         }

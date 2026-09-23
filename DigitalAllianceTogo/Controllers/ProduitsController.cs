@@ -12,6 +12,7 @@ using DigitalAllianceTogo.Application.Produits.Commands.SupprimerProduit;
 using DigitalAllianceTogo.Application.Produits.Dtos;
 using DigitalAllianceTogo.Application.Produits.Queries.GetProduitById;
 using DigitalAllianceTogo.Application.Produits.Queries.GetProduits;
+using DigitalAllianceTogo.Application.Catalogue;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -127,6 +128,16 @@ namespace DigitalAllianceTogo.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>Choisit l'image affichée en vignette dans la boutique.</summary>
+        [HttpPut("images/{imageId:guid}/principale")]
+        [Authorize(Roles = "Admin,Catalogue")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DefinirImagePrincipale(Guid imageId, CancellationToken cancellationToken)
+        {
+            await _sender.Send(new DefinirImagePrincipaleCommand(imageId), cancellationToken);
+            return NoContent();
+        }
+
         /// <summary>Ajoute un attribut (ex: "Couleur" = "Rouge") au produit.</summary>
         [HttpPost("{id:guid}/attributs")]
         [Authorize(Roles = "Admin,Catalogue")]
@@ -172,6 +183,28 @@ namespace DigitalAllianceTogo.Api.Controllers
             return StatusCode(StatusCodes.Status201Created, await _sender.Send(command, cancellationToken));
         }
 
+        /// <summary>Renomme, décrit ou retire de la vente une catégorie (ses produits disparaissent de la boutique).</summary>
+        [HttpPut("~/api/categories/{id:guid}")]
+        [Authorize(Roles = "Admin,Catalogue")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> ModifierCategorie(Guid id, ModifierReferentielRequest request, CancellationToken cancellationToken)
+        {
+            await _sender.Send(new ModifierReferentielCommand(TypeReferentiel.Categorie, id, request.Nom, request.Description, request.Actif), cancellationToken);
+            return NoContent();
+        }
+
+        /// <summary>Renomme, décrit ou retire de la vente une marque (ses produits disparaissent de la boutique).</summary>
+        [HttpPut("~/api/marques/{id:guid}")]
+        [Authorize(Roles = "Admin,Catalogue")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> ModifierMarque(Guid id, ModifierReferentielRequest request, CancellationToken cancellationToken)
+        {
+            await _sender.Send(new ModifierReferentielCommand(TypeReferentiel.Marque, id, request.Nom, request.Description, request.Actif), cancellationToken);
+            return NoContent();
+        }
+
         /// <summary>Crée une marque.</summary>
         [HttpPost("~/api/marques")]
         [Authorize(Roles = "Admin,Catalogue")]
@@ -194,4 +227,5 @@ namespace DigitalAllianceTogo.Api.Controllers
     public record ModifierProduitRequest(string Nom, string Description, decimal Prix, Guid CategorieId, Guid MarqueId, bool Actif);
     public record AjouterImageRequest(string Url, int Ordre, bool EstPrincipale);
     public record AjouterAttributRequest(string Cle, string Valeur, int Ordre);
+    public record ModifierReferentielRequest(string Nom, string Description, bool Actif);
 }

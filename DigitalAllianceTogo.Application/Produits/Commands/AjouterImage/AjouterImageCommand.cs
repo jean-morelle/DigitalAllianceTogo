@@ -28,25 +28,26 @@ namespace DigitalAllianceTogo.Application.Produits.Commands.AjouterImage
             if (!produitExiste)
                 throw new NotFoundException(nameof(Produit), request.ProduitId);
 
+            var imagesExistantes = await _context.ImagesProduit
+                .Where(i => i.ProduitId == request.ProduitId)
+                .ToListAsync(cancellationToken);
+
+            // La première image devient principale d'office : la boutique a toujours une vignette
+            var principale = request.EstPrincipale || !imagesExistantes.Any(i => i.EstPrincipale);
+
             // Une seule image principale par produit : si la nouvelle l'est,
             // on désactive l'ancienne pour ne jamais en avoir deux en même temps.
-            if (request.EstPrincipale)
-            {
-                var imagesExistantes = await _context.ImagesProduit
-                    .Where(i => i.ProduitId == request.ProduitId && i.EstPrincipale)
-                    .ToListAsync(cancellationToken);
-
+            if (principale)
                 foreach (var image in imagesExistantes)
                     image.EstPrincipale = false;
-            }
 
             var nouvelleImage = new ImageProduit
             {
                 Id = Guid.NewGuid(),
                 ProduitId = request.ProduitId,
                 Url = request.Url,
-                Ordre = request.Ordre,
-                EstPrincipale = request.EstPrincipale
+                Ordre = request.Ordre > 0 ? request.Ordre : imagesExistantes.Select(i => i.Ordre).DefaultIfEmpty(0).Max() + 1,
+                EstPrincipale = principale
             };
 
             _context.ImagesProduit.Add(nouvelleImage);

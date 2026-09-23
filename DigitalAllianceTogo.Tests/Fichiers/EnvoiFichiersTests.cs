@@ -1,5 +1,7 @@
 using System.Text;
+using DigitalAllianceTogo.Application.Common.Exceptions;
 using DigitalAllianceTogo.Application.Common.Interfaces;
+using DigitalAllianceTogo.Application.Common.Security;
 using DigitalAllianceTogo.Application.Fichiers;
 using DigitalAllianceTogo.Application.Fichiers.Commands;
 using DigitalAllianceTogo.Infrastructure.Services;
@@ -86,10 +88,42 @@ namespace DigitalAllianceTogo.Tests.Fichiers
             Assert.Equal(attendu, ReglesFichiers.EstLienPreuveValide(lien));
         }
 
-        private Task<FichierEnvoyeDto> EnvoyerAsync(string categorie, byte[] contenu) =>
-            new EnvoyerFichierCommandHandler(_stockage).Handle(new EnvoyerFichierCommand
+        [Fact]
+        public async Task Photo_produit_reservee_au_catalogue_et_jamais_en_pdf()
+        {
+            await Assert.ThrowsAsync<ForbiddenAccessException>(() => EnvoyerAsync("produits", Jpeg, Roles.Client));
+
+            var resultat = await EnvoyerAsync("produits", Png, Roles.Catalogue);
+            Assert.Matches("^/api/fichiers/produits/[0-9a-f]{32}\\.png$", resultat.Url);
+            Assert.True(ReglesFichiers.EstLienImageProduitValide(resultat.Url));
+
+            var pdf = Encoding.ASCII.GetBytes("%PDF-1.7 contenu");
+            await Assert.ThrowsAsync<ValidationException>(() => EnvoyerAsync("produits", pdf, Roles.Admin));
+        }
+
+        [Theory]
+        [InlineData("/api/fichiers/produits/0123456789abcdef0123456789abcdef.webp", true)]
+        [InlineData("https://exemple.tg/photo.jpg", true)]
+        [InlineData("/api/fichiers/paiements/0123456789abcdef0123456789abcdef.jpg", false)]
+        [InlineData("/api/fichiers/produits/0123456789abcdef0123456789abcdef.pdf", false)]
+        [InlineData("", false)]
+        public void Liens_acceptes_comme_image_produit(string lien, bool attendu)
+        {
+            Assert.Equal(attendu, ReglesFichiers.EstLienImageProduitValide(lien));
+        }
+
+        private Task<FichierEnvoyeDto> EnvoyerAsync(string categorie, byte[] contenu, string role = Roles.Livreur) =>
+            new EnvoyerFichierCommandHandler(_stockage, new UtilisateurFictif(role)).Handle(new EnvoyerFichierCommand
             {
                 Categorie = categorie, Taille = contenu.Length, Contenu = new MemoryStream(contenu)
             }, default);
+
+        private sealed class UtilisateurFictif(string role) : ICurrentUserService
+        {
+            public Guid? UtilisateurId { get; } = Guid.NewGuid();
+            public bool EstAuthentifie => true;
+            public string? AdresseIP => "127.0.0.1";
+            public bool EstDansRole(string r) => r == role;
+        }
     }
 }

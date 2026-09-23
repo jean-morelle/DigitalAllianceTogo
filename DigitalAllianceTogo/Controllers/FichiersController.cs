@@ -44,6 +44,26 @@ namespace DigitalAllianceTogo.Api.Controllers
             return Created(resultat.Url, resultat);
         }
 
+        /// <summary>Photo du catalogue : publique, mise en cache longtemps (le nom ne change jamais).</summary>
+        [HttpGet("produits/{nom}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult LireImageProduit(string nom)
+        {
+            var type = ReglesFichiers.TypeDepuisNom(nom);
+            if (type is null || type == ReglesFichiers.Pdf || !ReglesFichiers.EstNomValide(ReglesFichiers.CategorieProduits, nom))
+                return NotFound();
+
+            var flux = _stockage.Ouvrir(ReglesFichiers.CategorieProduits, nom);
+            if (flux is null)
+                return NotFound();
+
+            Response.Headers.XContentTypeOptions = "nosniff";
+            Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+            return File(flux, type.ContentType);
+        }
+
         /// <summary>Lit un fichier envoyé (personnel uniquement : ce sont des données personnelles).</summary>
         [HttpGet("{categorie}/{nom}")]
         [Authorize(Roles = Personnel)]

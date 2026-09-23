@@ -18,10 +18,12 @@ namespace DigitalAllianceTogo.Application.Produits.Commands.CreerProduit
     public class CreerProduitCommandHandler : IRequestHandler<CreerProduitCommand, Guid>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IAuditService _audit;
 
-        public CreerProduitCommandHandler(IApplicationDbContext context)
+        public CreerProduitCommandHandler(IApplicationDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         public async Task<Guid> Handle(CreerProduitCommand request, CancellationToken cancellationToken)
@@ -55,6 +57,8 @@ namespace DigitalAllianceTogo.Application.Produits.Commands.CreerProduit
             };
 
             _context.Produits.Add(produit);
+            _audit.Enregistrer("CreationProduit", "Produit", produit.Id, null,
+                new { produit.Reference, produit.Nom, produit.Prix });
             await _context.SaveChangesAsync(cancellationToken);
 
             return produit.Id;
